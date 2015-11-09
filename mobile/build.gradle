@@ -13,13 +13,56 @@ android {
         versionName "1.0"
         multiDexEnabled true
     }
+
     buildTypes {
-        debug{
+        debug {
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "LOGGING_ENABLED", "true"
+            buildConfigField "boolean", "IS_DEBUG_BUILD", "true"
         }
         release {
             minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                    'proguard-rules.pro'
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "LOGGING_ENABLED", "false"
+            buildConfigField "boolean", "IS_DEBUG_BUILD", "false"
+        }
+    }
+    signingConfigs {
+        def provDir = System.getenv("REDCHAIN_KEYSTORE_DIRECTORY") ?: ""
+        def redchainKeystorePass = System.getenv("REDCHAIN_KEYSTORE_PASS") ?: ""
+        def redchainProPass = System.getenv("REDCHAIN_PRO_PASS") ?: ""
+        redchainProRelease {
+            storeFile file("${provDir}/redchain.keystore")
+            storePassword redchainKeystorePass
+            keyAlias "redchain-pro-release"
+            keyPassword redchainProPass
+        }
+
+        def redchainFreePass = System.getenv("REDCHAIN_FREE_PASS") ?: ""
+        redchainFreeRelease {
+            storeFile file("${provDir}/redchain.keystore")
+            storePassword redchainKeystorePass
+            keyAlias "redchain-free-release"
+            keyPassword redchainFreePass
+        }
+    }
+    productFlavors {
+        def freeSigning = signingConfigs.redchainFreeRelease
+        def proSigning = signingConfigs.redchainProRelease
+        Free {
+            applicationId "com.hotpodata.redchain.free"
+            buildConfigField "boolean", "IS_PRO", "false"
+            signingConfig freeSigning
+            resValue "string", "app_label", "Redchain"
+        }
+        Pro {
+            applicationId "com.hotpodata.redchain.pro"
+            buildConfigField "boolean", "IS_PRO", "true"
+            signingConfig proSigning
+            resValue "string", "app_label", "Redchain Pro"
         }
     }
     sourceSets {
