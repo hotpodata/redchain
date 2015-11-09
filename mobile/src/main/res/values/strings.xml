@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">RedChain</string>
+    <string name="today">Today</string>
+    <string name="yesterday">Yesterday</string>
+    <string name="dont_break_the_chain">Your only job is to avoid breaking the chain. Keep going. Keep working towards your goal. Everyday.</string>
+    <string name="open_drawer">Open Drawer</string>
+    <string name="close_drawer">Close Drawer</string>
+
+    <string name="day_num">Day %1$d</string>
+
+    <string name="actions">Actions</string>
+    <string name="reset_chain">Reset Chain</string>
+    <string name="reset_chain_blurb">This will clear the chain. This action is irreversible.</string>
+    <string name="reset_chain_confirm">Are you sure you want to reset this chain?</string>
+
+    <string name="reset">Reset</string>
+    <string name="cancel">Cancel</string>
+
+
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+
+    <string name="daily_reminder">Daily Reminder</string>
+    <string name="broken_chain">Broken Chain</string>
+
+    <string name="notifications_heading">Notifications</string>
+    <string name="notification_reminder_title">RedChain</string>
+    <string name="notification_reminder_text">Keep the chain alive! One more day!</string>
+    <string name="notification_broken_title">Broken Chain!</string>
+    <string name="notification_broken_text">With every end there is a new beginning.</string>
+
+    <string name="this_app">This App</string>
+    <string name="rate_us">Rate this app</string>
+    <string name="rate_us_blerb_template">Help spread the %1$s word!</string>
+    <string name="contact_email_addr_template">hotpodata+%1$s@gmail.com</string>
+    <string name="contact_the_developer">Contact the developer</string>
+
+    <string name="legal_heading">Legal</string>
+    <string name="legal_blurb">This software application is provided as is. Its creator(s) take no responsibility for consequences of its installation or use.</string>
+
+    <string name="acknowledgements">Acknowledgements</string>
+    <string name="timber">Timber</string>
+    <string name="timber_license">@string/license_apache</string>
+    <string name="timber_url">https://github.com/JakeWharton/timber</string>
+
+    <string name="joda">Joda-Time</string>
+    <string name="joda_license">@string/license_apache</string>
+    <string name="joda_url">http://www.joda.org/joda-time/</string>
+
+    <string name="license_apache">Apache 2.0</string>
+
+
+</resources>

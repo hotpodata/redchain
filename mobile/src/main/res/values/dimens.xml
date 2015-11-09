@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="keyline_one">16dp</dimen>
+    <dimen name="keyline_two">72dp</dimen>
+    <dimen name="row_x_thickness">3dp</dimen>
+
+    <dimen name="row_title_max">38dp</dimen>
+    <dimen name="row_title_min">16dp</dimen>
+    <dimen name="row_subtitle">12dp</dimen>
+
+    <dimen name="row_vert_line_max_height">24dp</dimen>
+    <dimen name="row_vert_line_min_height">8dp</dimen>
+
+</resources>
