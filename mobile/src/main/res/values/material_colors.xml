@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="material_red">#F44336</color>
+    <color name="material_pink">#E91E63</color>
+    <color name="material_purple">#9C27B0</color>
+    <color name="material_deep_purple">#673AB7</color>
+    <color name="material_indigo">#3F51B5</color>
+    <color name="material_blue">#2196F3</color>
+    <color name="material_light_blue">#03A9F4</color>
+    <color name="material_cyan">#00BCD4</color>
+    <color name="material_teal">#009688</color>
+    <color name="material_green">#4CAF50</color>
+    <color name="material_light_green">#8BC34A</color>
+    <color name="material_lime">#CDDC39</color>
+    <color name="material_yellow">#FFEB3B</color>
+    <color name="material_amber">#FFC107</color>
+    <color name="material_orange">#FF9800</color>
+    <color name="material_deep_orange">#FF5722</color>
+    <color name="material_brown">#795548</color>
+    <color name="material_grey">#9E9E9E</color>
+    <color name="material_blue_grey">#607D8B</color>
+
+    <array name="material_colors">
+        <item>@color/material_red</item>
+        <item>@color/material_pink</item>
+        <item>@color/material_purple</item>
+        <item>@color/material_deep_purple</item>
+        <item>@color/material_indigo</item>
+        <item>@color/material_blue</item>
+        <item>@color/material_light_blue</item>
+        <item>@color/material_cyan</item>
+        <item>@color/material_teal</item>
+        <item>@color/material_green</item>
+        <!--<item>@color/material_light_green</item>-->
+        <!--<item>@color/material_lime</item>-->
+        <!--<item>@color/material_yellow</item>-->
+        <item>@color/material_amber</item>
+        <item>@color/material_orange</item>
+        <item>@color/material_deep_orange</item>
+        <item>@color/material_brown</item>
+        <item>@color/material_blue_grey</item>
+    </array>
+
+</resources>

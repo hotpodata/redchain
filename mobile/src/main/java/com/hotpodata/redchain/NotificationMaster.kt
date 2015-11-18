@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.support.v4.app.NotificationManagerCompat
 import android.support.v7.app.NotificationCompat
+import com.hotpodata.redchain.activity.ChainActivity
 import com.hotpodata.redchain.receivers.BrokenChainNotificationReceiver
 import com.hotpodata.redchain.receivers.ReminderNotificationReceiver
 import org.joda.time.LocalDateTime
@@ -33,9 +34,25 @@ object NotificationMaster {
         context = ctx
     }
 
-    public fun scheduleReminderNotification() {
-        var intent = Intent(context, ReminderNotificationReceiver::class.java)
-        var pending = PendingIntent.getBroadcast(context, RECEIVER_CODE_REMINDER, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    public fun genReceiverCodeForBroken(chainId: String): Int {
+        return RECEIVER_CODE_BROKEN + Math.abs(chainId.hashCode())
+    }
+
+    public fun genReceiverCodeForReminder(chainId: String): Int {
+        return RECEIVER_CODE_REMINDER + Math.abs(chainId.hashCode())
+    }
+
+    public fun genNotifIdForBroken(chainId: String): Int {
+        return NOTIF_BROKEN + Math.abs(chainId.hashCode())
+    }
+
+    public fun genNotifIdForReminder(chainId: String): Int {
+        return NOTIF_REMINDER + Math.abs(chainId.hashCode())
+    }
+
+    public fun scheduleReminderNotification(chainId: String) {
+        var intent = ReminderNotificationReceiver.IntentGenerator.generateIntent(context!!, chainId)
+        var pending = PendingIntent.getBroadcast(context, genReceiverCodeForReminder(chainId), intent, PendingIntent.FLAG_UPDATE_CURRENT)
         var alarmManager: AlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         try {
             alarmManager.cancel(pending)
@@ -46,14 +63,14 @@ object NotificationMaster {
         alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pending)
     }
 
-    public fun dismissReminderNotification() {
+    public fun dismissReminderNotification(chainId: String) {
         var notificationManager = NotificationManagerCompat.from(context)
-        notificationManager.cancel(NOTIF_REMINDER)
+        notificationManager.cancel(genNotifIdForReminder(chainId))
     }
 
-    public fun scheduleBrokenNotification() {
-        var intent = Intent(context, BrokenChainNotificationReceiver::class.java)
-        var pending = PendingIntent.getBroadcast(context, RECEIVER_CODE_BROKEN, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    public fun scheduleBrokenNotification(chainId: String) {
+        var intent = BrokenChainNotificationReceiver.IntentGenerator.generateIntent(context!!, chainId)
+        var pending = PendingIntent.getBroadcast(context, genReceiverCodeForBroken(chainId), intent, PendingIntent.FLAG_UPDATE_CURRENT)
         var alarmManager: AlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         try {
             alarmManager.cancel(pending)
@@ -64,50 +81,66 @@ object NotificationMaster {
         alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pending)
     }
 
-    public fun dismissBrokenNotification() {
+    public fun dismissBrokenNotification(chainId: String) {
         var notificationManager = NotificationManagerCompat.from(context)
-        notificationManager.cancel(NOTIF_BROKEN)
+        notificationManager.cancel(genNotifIdForBroken(chainId))
     }
 
-    public fun showReminderNotification() {
+    public fun showReminderNotification(chainId: String) {
         if (showReminderEnabled()) {
-            var notificationManager = NotificationManagerCompat.from(context)
-            notificationManager.notify(NOTIF_REMINDER, generateReminderNotification())
+            var notif = generateReminderNotification(chainId)
+            if (notif != null) {
+                var notificationManager = NotificationManagerCompat.from(context)
+                notificationManager.notify(genNotifIdForReminder(chainId), notif)
+            }
         }
     }
 
-    public fun showBrokenChainNotification() {
+    public fun showBrokenChainNotification(chainId: String) {
         if (showBrokenEnabled()) {
-            var notificationManager = NotificationManagerCompat.from(context)
-            notificationManager.notify(NOTIF_BROKEN, generateBrokenChainNotification())
+            var notif = generateBrokenChainNotification(chainId)
+            if (notif != null) {
+                var notificationManager = NotificationManagerCompat.from(context)
+                notificationManager.notify(genNotifIdForBroken(chainId), notif)
+            }
         }
     }
 
-    public fun generateReminderNotification(): Notification {
+    public fun generateReminderNotification(chainId: String): Notification? {
         var builder = NotificationCompat.Builder(context)
-        builder.setSmallIcon(R.drawable.ic_white_chain)
-        builder.setColor(context?.resources!!.getColor(R.color.primary))
-        builder.setContentTitle(context?.getString(R.string.notification_reminder_title))
-        builder.setContentText(context?.getString(R.string.notification_reminder_text))
-        builder.setContentIntent(genPendingIntent())
-        builder.setAutoCancel(true)
-        return builder.build()
+        var chain = ChainMaster.getChain(chainId)
+        if (chain != null) {
+            builder.setSmallIcon(R.drawable.ic_white_chain)
+            builder.setColor(chain.color)
+            builder.setContentTitle(chain.title)
+            builder.setContentText(context?.getString(R.string.notification_reminder_text))
+            builder.setContentIntent(genPendingIntent(chainId))
+            builder.setAutoCancel(false)
+            return builder.build()
+        } else {
+            return null
+        }
     }
 
-    public fun generateBrokenChainNotification(): Notification {
+    public fun generateBrokenChainNotification(chainId: String): Notification? {
         var builder = NotificationCompat.Builder(context)
-        builder.setSmallIcon(R.drawable.ic_white_chain)
-        builder.setColor(context?.resources!!.getColor(R.color.primary))
-        builder.setContentTitle(context?.getString(R.string.notification_broken_title))
-        builder.setContentText(context?.getString(R.string.notification_broken_text))
-        builder.setContentIntent(genPendingIntent())
-        builder.setAutoCancel(true)
-        return builder.build()
+        var chain = ChainMaster.getChain(chainId)
+        if (chain != null) {
+            builder.setSmallIcon(R.drawable.ic_white_chain)
+            builder.setColor(chain.color)
+            builder.setContentTitle(context?.getString(R.string.notification_broken_title))
+            builder.setContentText(context?.getString(R.string.notification_broken_text_template, chain.title))
+            builder.setContentIntent(genPendingIntent(chainId))
+            builder.setAutoCancel(true)
+            return builder.build()
+        } else {
+            return null
+        }
     }
 
-    fun genPendingIntent(): PendingIntent {
-        var intent = Intent(context, ChainActivity::class.java)
-        return PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    fun genPendingIntent(chainId: String): PendingIntent {
+        var intent = ChainActivity.IntentGenerator.generateIntent(context!!, chainId)
+        return PendingIntent.getActivity(context, chainId.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     fun setShowReminder(enabled: Boolean) {

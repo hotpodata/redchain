@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    android:id="@+id/root_container"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/material_red">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/title_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="@dimen/keyline_one"
+                    android:layout_marginRight="@dimen/keyline_one"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_horizontal"
+                    android:textColor="#FFFFFF"
+                    android:textSize="36dp" />
+
+                <VideoView
+                    android:id="@+id/feature_video"
+                    android:layout_width="135dp"
+                    android:layout_height="240dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="@dimen/keyline_one"
+                    android:layout_marginRight="@dimen/keyline_one"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_horizontal" />
+
+                <TextView
+                    android:id="@+id/feature_explanation_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginLeft="@dimen/keyline_one"
+                    android:layout_marginRight="@dimen/keyline_one"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:gravity="center_horizontal"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14dp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <Button
+            android:id="@+id/go_pro_btn"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="@dimen/keyline_one"
+            android:layout_marginRight="@dimen/keyline_one"
+            android:layout_marginTop="8dp"
+            android:layout_weight="0"
+            android:background="#FFFFFF"
+            android:text="@string/go_pro_action"
+            android:textColor="@color/material_red" />
+
+
+    </LinearLayout>
+
+
+</FrameLayout>

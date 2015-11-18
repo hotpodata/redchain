@@ -7,14 +7,27 @@ import java.util.*
 /**
  * Created by jdrotos on 10/5/15.
  */
-public class Chain(name: String, links: List<LocalDateTime>) {
-    var dateTimes: List<LocalDateTime>
+public class Chain(chainId: String, name: String, chainColor: Int, links: List<LocalDateTime>) {
+
+    object Builder{
+        public fun buildFreshChain(chainTitle: String, chainColor: Int): Chain{
+            return Chain(UUID.randomUUID().toString(), chainTitle,chainColor, ArrayList<LocalDateTime>())
+        }
+    }
+
+    var id: String
+        get
     var title: String
+        get
+    var dateTimes: List<LocalDateTime>
+    var color: Int
         get
 
     init {
+        id = chainId
         title = name
         dateTimes = sanitizeDateTimes(links)
+        color = chainColor
     }
 
     val chainLength: Int
@@ -34,14 +47,37 @@ public class Chain(name: String, links: List<LocalDateTime>) {
         return chainDepth(LocalDateTime.now()) >= 0;
     }
 
+    public fun removeTodayFromChain(){
+        var todayDt: LocalDateTime? = null
+        for(dt in dateTimes){
+            if(dt.toLocalDate().equals(LocalDate.now())){
+                todayDt = dt;
+                break;
+            }
+        }
+        if(todayDt != null){
+            var dates = ArrayList<LocalDateTime>(dateTimes)
+            dates.remove(todayDt)
+            dateTimes = sanitizeDateTimes(dates)
+        }
+    }
+
     public fun chainContainsYesterday(): Boolean {
         return chainDepth(LocalDateTime.now().minusDays(1)) >= 0;
+    }
+
+    public fun clearDates(){
+        dateTimes = ArrayList<LocalDateTime>()
+    }
+
+    public fun chainExpired(): Boolean{
+        return (chainLength > 1 && !chainContainsYesterday()) || (chainLength == 1 && !chainContainsYesterday() && !chainContainsToday())
     }
 
     public fun addNowToChain() {
         if (!chainContainsToday()) {
             var dts = ArrayList<LocalDateTime>(dateTimes)
-            dts.add( LocalDateTime.now())
+            dts.add(LocalDateTime.now())
             dateTimes = sanitizeDateTimes(dts)
 
         }
@@ -58,10 +94,10 @@ public class Chain(name: String, links: List<LocalDateTime>) {
         return -1;
     }
 
-    private fun sanitizeDateTimes(dateTimeList: List<LocalDateTime>) : List<LocalDateTime>{
+    private fun sanitizeDateTimes(dateTimeList: List<LocalDateTime>): List<LocalDateTime> {
         var dtSet = HashSet<LocalDateTime>()
-        for(dt in dateTimeList){
-            if(dt.toLocalDate().isBefore(LocalDate.now().plusDays(1))){
+        for (dt in dateTimeList) {
+            if (dt.toLocalDate().isBefore(LocalDate.now().plusDays(1))) {
                 dtSet.add(dt)
             }
         }

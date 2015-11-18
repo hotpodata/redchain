@@ -84,6 +84,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                 holder.xview.setOnClickListener(null)
                 holder.xview.isClickable = false
                 holder.xview.boxToXPercentage = 1f
+                holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
                 holder.tv3.text = ctx.resources.getString(R.string.day_num, chain.chainLength)
                 holder.tv4.text = chain.chainLink(0)?.toString(dtformat3)
                 holder.tv2.visibility = View.GONE
@@ -92,6 +93,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                 holder.tv2.visibility = View.VISIBLE
                 holder.afterChecked.visibility = View.GONE
                 holder.xview.isClickable = true
+                holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
                 holder.xview.boxToXPercentage = 0f
                 holder.xview.setOnClickListener(object : View.OnClickListener {
                     override fun onClick(v: View?) {
@@ -142,6 +144,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
 
             holder.itemView.setOnClickListener(null)
             holder.xview.setBox(false)
+            holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
 
             if (holder.tv1.typeface != headingTypeface) {
                 holder.tv1.typeface = headingTypeface
@@ -175,6 +178,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                 holder.vertLine.layoutParams.height = lineHeight.toInt()
                 holder.vertLine.layoutParams = holder.vertLine.layoutParams
             }
+            holder.vertLine.setBackgroundColor(chain.color)
             holder.vertLine.visibility = if (data.invisible) View.INVISIBLE else View.VISIBLE;
         }
     }

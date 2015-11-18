@@ -2,19 +2,42 @@
     <string name="app_name">RedChain</string>
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
-    <string name="dont_break_the_chain">Your only job is to avoid breaking the chain. Keep going. Keep working towards your goal. Everyday.</string>
+    <!--<string name="dont_break_the_chain">Your only job is to avoid breaking the chain. Keep going. Keep working towards your goal. Everyday.</string>-->
+    <string name="dont_break_the_chain">Complete your goal today. Check this box. Complete your goal tomorrow. Check this box. Complete your goal the next day. Check this box. Don\'t break the chain.</string>
     <string name="open_drawer">Open Drawer</string>
     <string name="close_drawer">Close Drawer</string>
 
+    <string name="pro_feature_title_template">%1$s is a Pro Feature!</string>
+    <string name="go_pro_action">Go Pro Now!</string>
+
+    <string name="chains">Chains</string>
+    <string name="create_chain">New Chain</string>
+    <string name="chain_title_hint">Chain Title</string>
+    <string name="chain_color">Chain Color</string>
+    <string name="edit_chain">Edit Chain</string>
+    <string name="delete_chain">Delete Chain</string>
+    <string name="delete">Delete</string>
+    <string name="delete_chain_confirm">Are you sure you want to delete this chain forever?</string>
+
     <string name="day_num">Day %1$d</string>
 
+    <string name="error_invalid_title">You must supply a valid title</string>
+
+    <string name="visit_website">Visit Hot PoData</string>
+    <string name="visit_website_blurb">Visit our website, read our blog, get updates.</string>
+
     <string name="actions">Actions</string>
+    <string name="reset_today">Reset Today Only</string>
     <string name="reset_chain">Reset Chain</string>
     <string name="reset_chain_blurb">This will clear the chain. This action is irreversible.</string>
     <string name="reset_chain_confirm">Are you sure you want to reset this chain?</string>
+    <string name="version_template">V%1$s by Hot PoData</string>
 
     <string name="reset">Reset</string>
     <string name="cancel">Cancel</string>
+
+    <string name="go_pro_create_edit">Chain Customization</string>
+    <string name="go_pro_create_edit_blurb">Create, Edit, Delete and customize your chains! Please support indie developers! Go Pro!</string>
 
 
     <string name="enabled">Enabled</string>
@@ -24,10 +47,9 @@
     <string name="broken_chain">Broken Chain</string>
 
     <string name="notifications_heading">Notifications</string>
-    <string name="notification_reminder_title">RedChain</string>
-    <string name="notification_reminder_text">Keep the chain alive! One more day!</string>
+    <string name="notification_reminder_text">Keep your chain alive. Complete your goal everyday. No excuses.</string>
     <string name="notification_broken_title">Broken Chain!</string>
-    <string name="notification_broken_text">With every end there is a new beginning.</string>
+    <string name="notification_broken_text_template">%1$s has broken. Don\'t get discouraged. Start again. Take it one day at a time.</string>
 
     <string name="this_app">This App</string>
     <string name="rate_us">Rate this app</string>
