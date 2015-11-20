@@ -1,12 +1,10 @@
 package com.hotpodata.redchain.activity
 
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
-import android.os.Bundle
+import android.os.*
 import android.support.design.widget.AppBarLayout
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
@@ -20,6 +18,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import com.google.android.gms.analytics.HitBuilders
 import com.google.android.gms.analytics.Tracker
 import com.hotpodata.redchain.*
@@ -28,6 +27,7 @@ import com.hotpodata.redchain.adapter.SideBarAdapter
 import com.hotpodata.redchain.data.Chain
 import com.hotpodata.redchain.fragment.GoProChainFragment
 import com.hotpodata.redchain.interfaces.ChainUpdateListener
+import com.hotpodata.redchain.service.FreeVersionMigrationService
 import com.hotpodata.redchain.utils.IntentUtils
 import org.joda.time.LocalDateTime
 import org.json.JSONArray
@@ -40,8 +40,21 @@ import java.util.*
  */
 public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
 
+    //Constants
+    val FREE_VERSION_PACKAGE_NAME = "com.hotpodata.redchain.free"
+    val PRO_VERSION_PACKAGE_NAME = "com.hotpodata.redchain.pro"
+    val MIGRATION_SERVICE_NAME = "com.hotpodata.redchain.service.FreeVersionMigrationService"
     val FTAG_GO_PRO = "GO_PRO"
+    val PREFS_CHAIN_ACTIVITY = "PREFS_CHAIN_ACTIVITY"
+    val PREF_KEY_HAS_MIGRATED = "PREF_KEY_HAS_MIGRATED"
+    val PREF_KEY_LAUNCH_COUNT = "PREF_KEY_LAUNCH_COUNT"
 
+    //Migration and routing
+    var messenger: Messenger
+    var serviceConnection: ServiceConnection
+    var isBound = false
+
+    //Views
     var appBarLayout: AppBarLayout? = null
     var toolBar: Toolbar? = null
     var recyclerView: RecyclerView? = null
@@ -49,6 +62,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
     var drawerToggle: ActionBarDrawerToggle? = null
     var leftDrawerRecyclerView: RecyclerView? = null
 
+    //Adapters
     var chainAdapter: ChainAdapter? = null
     var sideBarAdapter: SideBarAdapter? = null
 
@@ -61,10 +75,15 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         }
     }
 
+    init {
+        //Set up our data migration code
+        messenger = genMigrateDataMessenger()
+        serviceConnection = genMigrateServiceConnection()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chain_list);
-
         appBarLayout = findViewById(R.id.app_bar_layout) as AppBarLayout?
         toolBar = findViewById(R.id.toolbar) as Toolbar?
         recyclerView = findViewById(R.id.recycler_view) as RecyclerView?
@@ -78,7 +97,24 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         supportActionBar.setDisplayHomeAsUpEnabled(true)
         supportActionBar.setHomeButtonEnabled(true)
 
+        //Data migration from free version
+        if (BuildConfig.IS_PRO && !hasMigratedData() && IntentUtils.isAppInstalled(this, FREE_VERSION_PACKAGE_NAME)) {
+            //This is the pro version, and the free version is installed
+            //Better do some data migration if applicable
+            doBindService()
+        }
+
+        if (savedInstanceState == null) {
+            incrementLaunchCount()
+        }
+
+
         consumeIntent(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        doUnBindService()
     }
 
     private fun consumeIntent(intent: Intent?) {
@@ -102,6 +138,17 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
 
     public override fun onResume() {
         super.onResume()
+
+        if (!BuildConfig.IS_PRO && IntentUtils.isAppInstalled(this, PRO_VERSION_PACKAGE_NAME)) {
+            //This is the free version, and the pro version is installed
+            //so we route to the pro version
+            Toast.makeText(this, R.string.toast_routing_to_pro_version_msg, Toast.LENGTH_SHORT).show()
+            var proIntent = packageManager.getLaunchIntentForPackage(PRO_VERSION_PACKAGE_NAME)
+            startActivity(proIntent);
+            finish();
+            return
+        }
+
         Timber.i("Setting screen name:" + AnalyticsMaster.SCREEN_CHAIN);
         AnalyticsMaster.getTracker(this)?.setScreenName(AnalyticsMaster.SCREEN_CHAIN);
         AnalyticsMaster.getTracker(this)?.send(HitBuilders.ScreenViewBuilder().build());
@@ -128,6 +175,8 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 resetTodayItem.setEnabled(false)
             }
         }
+        menu?.setGroupEnabled(R.id.pro_feature_group, BuildConfig.IS_PRO)
+        menu?.setGroupVisible(R.id.pro_feature_group, BuildConfig.IS_PRO)
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -227,12 +276,12 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         if (chainAdapter == null) {
             chainAdapter = ChainAdapter(this, chain)
             chainAdapter?.chainUpdateListener = this
-            recyclerView?.setAdapter(chainAdapter)
-            recyclerView?.setLayoutManager(LinearLayoutManager(this))
+            recyclerView?.adapter = chainAdapter
+            recyclerView?.layoutManager = LinearLayoutManager(this)
         } else {
             chainAdapter?.updateChain(chain)
         }
-        getSupportActionBar().setTitle(chain.title)
+        supportActionBar.title = chain.title
         setColor(chain.color, true)
         refreshSideBar()
     }
@@ -249,8 +298,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
             Timber.e(e, "Version fail")
         }
 
-        sideBarRows.add(SideBarAdapter.SideBarHeading(getString(R.string.app_name), version))
-
+        sideBarRows.add(SideBarAdapter.SideBarHeading(getString(R.string.app_label), version))
         sideBarRows.add(getString(R.string.chains))
         for (chain in ChainMaster.allChains.values) {
             sideBarRows.add(SideBarAdapter.RowChain(chain, chain.id == ChainMaster.selectedChainId, object : View.OnClickListener {
@@ -272,10 +320,10 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         sideBarRows.add(SideBarAdapter.RowCreateChain(getString(R.string.create_chain), "", object : View.OnClickListener {
             override fun onClick(view: View) {
                 drawerLayout?.closeDrawers()
-                if(BuildConfig.IS_PRO) {
+                if (BuildConfig.IS_PRO) {
                     var intent = ChainEditActivity.IntentGenerator.generateNewChainIntent(this@ChainActivity);
                     startActivity(intent)
-                }else{
+                } else {
                     showGoPro()
                 }
                 try {
@@ -290,7 +338,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         }, R.drawable.ic_action_new))
 
         sideBarRows.add(getString(R.string.actions))
-        if(!BuildConfig.IS_PRO) {
+        if (!BuildConfig.IS_PRO) {
             sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.go_pro_action), getString(R.string.go_pro_create_edit_blurb, getString(R.string.app_name)), object : View.OnClickListener {
                 override fun onClick(view: View) {
                     var intent = IntentUtils.goPro(this@ChainActivity)
@@ -330,8 +378,8 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.contact_the_developer), getString(R.string.contact_email_addr_template, getString(R.string.app_name)), object : View.OnClickListener {
             override fun onClick(view: View) {
                 val intent = Intent(Intent.ACTION_SEND)
-                intent.setType("*/*")
-                intent.putExtra(Intent.EXTRA_EMAIL, getString(R.string.contact_email_addr_template, getString(R.string.app_name)))
+                intent.setType("message/rfc822")
+                intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.contact_email_addr_template, getString(R.string.app_name))))
                 if (intent.resolveActivity(packageManager) != null) {
                     startActivity(intent)
                 }
@@ -467,5 +515,132 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         gopro.show(supportFragmentManager, FTAG_GO_PRO)
     }
 
+
+    /**
+     * DATA MIGRATION STUFF
+     */
+
+    fun doBindService(): Boolean {
+        try {
+            Timber.d("doBindService")
+            var component = ComponentName(FREE_VERSION_PACKAGE_NAME, MIGRATION_SERVICE_NAME)
+            var intent = Intent()
+            intent.setComponent(component)
+            bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+            isBound = true
+        } catch(e: Exception) {
+            Timber.e(e, "doBindService Fail")
+        }
+        return isBound
+    }
+
+    fun doUnBindService() {
+        if (isBound) {
+            unbindService(serviceConnection)
+            isBound = false
+        }
+    }
+
+    fun genMigrateDataMessenger(): Messenger {
+        return Messenger(object : Handler() {
+            override public fun handleMessage(msg: Message) {
+                Timber.d("Message returned from migration service. Code:" + msg.what)
+                if (msg.what == FreeVersionMigrationService.Constants.MSG_FREE_VERSION_DATA) {
+                    if (msg.data != null) {
+                        Timber.d("Message contains a data bundle.")
+                        var importedChain = ChainMaster.chainFromBundle(msg.data)
+                        if (importedChain != null) {
+                            Timber.d("Data bundle parsed. Imported chain aquired.")
+                            //Get the current default chain
+                            var currentDefaultChain = ChainMaster.getChain(ChainMaster.DEFAULT_CHAIN_ID)
+
+                            Timber.d("Imported chain - name:" + importedChain.title + " id:" + importedChain.id)
+                            Timber.d("Default chain - name:" + currentDefaultChain?.title + " id:" + currentDefaultChain?.id)
+
+                            //We check if the current default chain has any real data
+                            //if it doesn't we prepare it to be squashed, otherwise we import differently
+                            if (currentDefaultChain != null && getLaunchCount() <= 1 && currentDefaultChain.chainLength <= 1){
+                                Timber.d("currentDefaultChain has limited data")
+                                if(currentDefaultChain.chainContainsToday() && !importedChain.chainContainsToday()) {
+                                    Timber.d("Adding now to imported chain")
+                                    importedChain.addNowToChain()
+                                }
+                            }else{
+                                Timber.d("Existing default chain has too much data. Fudging the imported chain.")
+                                importedChain.id = UUID.randomUUID().toString()
+                                importedChain.title = resources.getString(R.string.chain_free_version_title_template, importedChain.title)
+                            }
+
+                            //We now save (usually squash) the default chain
+                            Timber.d("Saving imported chain...")
+                            ChainMaster.saveChain(importedChain)
+                            Timber.d("Imported chain saved! Updating selected chain...")
+                            ChainMaster.setSelectedChain(importedChain.id)
+                            Timber.d("Imported chain selected. Id:" + importedChain.id)
+
+                            refreshChain()
+                            Toast.makeText(this@ChainActivity, R.string.toast_data_migration, Toast.LENGTH_SHORT).show()
+                        }
+                        //Important! We don't want to migrate every time
+                        setMigratedData(true)
+                    }
+                    doUnBindService()
+                } else {
+                    super.handleMessage(msg)
+                }
+            }
+        })
+    }
+
+    fun genMigrateServiceConnection(): ServiceConnection {
+        return object : ServiceConnection {
+            override fun onServiceDisconnected(name: ComponentName?) {
+                Timber.d("onServiceDisconnected")
+            }
+
+            override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+                Timber.d("onServiceConnected")
+                try {
+                    var serviceMessenger = Messenger(service)
+                    var msg = Message.obtain(null, FreeVersionMigrationService.Constants.MSG_REQUEST_FREE_VERSION_DATA)
+                    msg.replyTo = messenger
+                    serviceMessenger.send(msg)
+                    Timber.d("requesting migration data")
+                } catch(ex: java.lang.Exception) {
+                    Timber.e(ex, "onServiceConnected")
+                }
+            }
+        }
+    }
+
+    private fun hasMigratedData(): Boolean {
+        var sharedPref = getSharedPreferences(PREFS_CHAIN_ACTIVITY, Context.MODE_PRIVATE);
+        var hasMigrated = sharedPref.getBoolean(PREF_KEY_HAS_MIGRATED, false)
+        Timber.d("hasMigratedData:" + hasMigrated)
+        return hasMigrated
+    }
+
+    private fun setMigratedData(dataIsMigrated: Boolean) {
+        Timber.d("setMigratedData:" + dataIsMigrated)
+        var sharedPref = getSharedPreferences(PREFS_CHAIN_ACTIVITY, Context.MODE_PRIVATE);
+        var editor = sharedPref.edit();
+        editor.putBoolean(PREF_KEY_HAS_MIGRATED, dataIsMigrated)
+        editor.commit();
+    }
+
+    private fun getLaunchCount(): Int {
+        var sharedPref = getSharedPreferences(PREFS_CHAIN_ACTIVITY, Context.MODE_PRIVATE);
+        var launchCount = sharedPref.getInt(PREF_KEY_LAUNCH_COUNT, 0)
+        Timber.d("getLaunchCount:" + launchCount)
+        return launchCount
+    }
+
+    private fun incrementLaunchCount() {
+        Timber.d("incrementLaunchCount")
+        var sharedPref = getSharedPreferences(PREFS_CHAIN_ACTIVITY, Context.MODE_PRIVATE);
+        var editor = sharedPref.edit();
+        editor.putInt(PREF_KEY_LAUNCH_COUNT, getLaunchCount() + 1)
+        editor.commit();
+    }
 
 }

@@ -9,6 +9,9 @@
 
     <string name="pro_feature_title_template">%1$s is a Pro Feature!</string>
     <string name="go_pro_action">Go Pro Now!</string>
+    <string name="toast_routing_to_pro_version_msg">Launching Pro Version</string>
+    <string name="toast_data_migration">Your free version chain has been imported! Thanks for going pro!</string>
+    <string name="chain_free_version_title_template">%1$s (imported)</string>
 
     <string name="chains">Chains</string>
     <string name="create_chain">New Chain</string>

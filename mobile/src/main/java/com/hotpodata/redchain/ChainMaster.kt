@@ -2,6 +2,7 @@ package com.hotpodata.redchain
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Bundle
 import android.text.TextUtils
 import com.hotpodata.redchain.data.Chain
 import org.joda.time.LocalDateTime
@@ -25,10 +26,11 @@ object ChainMaster {
     val PREFS_CORE = "core"
     val PREF_ACTIVE_CHAIN_ID = "active_chain_id"
     val PREF_ALL_CHAINS = "chainids"
+    val DEFAULT_CHAIN_ID = "DEFAULT_CHAIN_ID"
 
 
     var context: Context? = null
-    var selectedChainId: String? = null
+    var selectedChainId: String = DEFAULT_CHAIN_ID
     var allChains: MutableMap<String, Chain> = HashMap()
 
     fun init(ctx: Context) {
@@ -38,14 +40,14 @@ object ChainMaster {
     }
 
     private fun ensureValidData() {
-        if (selectedChainId == null || allChains.size <= 0) {
+        if (allChains.size <= 0) {
             //WE DONT HAVE ANY REAL DATA??
-            var chain = Chain(UUID.randomUUID().toString(), context!!.getString(R.string.app_name), context!!.resources.getColor(R.color.primary), ArrayList<LocalDateTime>())
+            var chain = Chain(DEFAULT_CHAIN_ID, context!!.getString(R.string.app_name), context!!.resources.getColor(R.color.primary), ArrayList<LocalDateTime>())
             saveChain(chain)
             setSelectedChain(chain.id)
             Timber.d("ensureValidData - Setting selected chain:" + chain.title + " id:" + chain.id)
         }
-        if (selectedChainId != null && !allChains.containsKey(selectedChainId as String)) {
+        if (!allChains.containsKey(selectedChainId as String)) {
             //WE DONT HAVE DATA FOR OUR SELECTED CHAIN...
             Timber.d("ensureValidData - selectedChainId not found");
             var chain = allChains.get(allChains.keys.first())
@@ -143,11 +145,11 @@ object ChainMaster {
     }
 
 
-    private fun readSelectedChainId(): String? {
+    private fun readSelectedChainId(): String {
         var sharedPref = getSharedPrefs()
-        var chainStr = sharedPref.getString(PREF_ACTIVE_CHAIN_ID, null);
-        Timber.d("readSelectedChainId:" + chainStr)
-        return chainStr
+        var id = sharedPref.getString(PREF_ACTIVE_CHAIN_ID, DEFAULT_CHAIN_ID);
+        Timber.d("readSelectedChainId:" + id)
+        return id
     }
 
     private fun writeSelectedChainId(id: String) {
@@ -211,6 +213,8 @@ object ChainMaster {
 
     }
 
+
+
     fun chainFromJson(chainJsonStr: String): Chain? {
         try {
             if (!TextUtils.isEmpty(chainJsonStr)) {
@@ -243,6 +247,20 @@ object ChainMaster {
             Timber.e(ex, "chainFromJson Fail")
         }
         return null
+    }
+
+    val BUNDLE_KEY_CHAIN_JSON = "BUNDLE_KEY_CHAIN_JSON"
+    fun chainToBundle(chain: Chain): Bundle{
+        var bundle = Bundle()
+        bundle.putString(BUNDLE_KEY_CHAIN_JSON, chainToJson(chain).toString())
+        return bundle
+    }
+
+    fun chainFromBundle(bundle: Bundle?): Chain?{
+        if(bundle != null && bundle.containsKey(BUNDLE_KEY_CHAIN_JSON)){
+            return chainFromJson(bundle.getString(BUNDLE_KEY_CHAIN_JSON))
+        }
+        return null;
     }
 
 

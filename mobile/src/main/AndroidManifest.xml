@@ -18,7 +18,7 @@
 
         <activity
             android:name=".activity.ChainActivity"
-            android:launchMode="singleInstance">
+            android:launchMode="singleInstance" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,6 +31,11 @@
             android:name=".activity.ChainEditActivity"
             android:launchMode="singleInstance"
             android:windowSoftInputMode="stateHidden" />
+
+        <service
+            android:name=".service.FreeVersionMigrationService"
+            android:exported="true"
+            android:label="RedChain Upgrade data migration service" />
 
         <receiver
             android:name=".receivers.BrokenChainNotificationReceiver"

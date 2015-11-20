@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/edit_chain"
-        android:icon="@drawable/ic_action_edit_white"
-        android:title="@string/edit_chain"
-        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/reset_today_only"
@@ -13,15 +8,23 @@
         android:title="@string/reset_today"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/reset_chain"
-        android:icon="@drawable/ic_reset_white"
-        android:title="@string/reset_chain"
-        app:showAsAction="never" />
+    <group android:id="@+id/pro_feature_group">
+        <item
+            android:id="@+id/edit_chain"
+            android:icon="@drawable/ic_action_edit_white"
+            android:title="@string/edit_chain"
+            app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/delete_chain"
-        android:icon="@drawable/ic_delete_chain_white"
-        android:title="@string/delete_chain"
-        app:showAsAction="never" />
+        <item
+            android:id="@+id/reset_chain"
+            android:icon="@drawable/ic_reset_white"
+            android:title="@string/reset_chain"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/delete_chain"
+            android:icon="@drawable/ic_delete_chain_white"
+            android:title="@string/delete_chain"
+            app:showAsAction="never" />
+    </group>
 </menu>
