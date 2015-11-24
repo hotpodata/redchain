@@ -281,7 +281,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
     }
 
     public fun refreshSideBar() {
-        var chain = ChainMaster.getSelectedChain()
+        var selectedChain = ChainMaster.getSelectedChain()
         var sideBarRows = ArrayList<Any>()
 
         var version: String? = null
@@ -519,11 +519,11 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
 
         if (sideBarAdapter == null) {
             sideBarAdapter = SideBarAdapter(this, sideBarRows);
-            sideBarAdapter?.setAccentColor(chain.color)
+            sideBarAdapter?.setAccentColor(selectedChain.color)
             leftDrawerRecyclerView?.adapter = sideBarAdapter
             leftDrawerRecyclerView?.layoutManager = LinearLayoutManager(this)
         } else {
-            sideBarAdapter?.setAccentColor(chain.color)
+            sideBarAdapter?.setAccentColor(selectedChain.color)
             sideBarAdapter?.setRows(sideBarRows)
         }
 
