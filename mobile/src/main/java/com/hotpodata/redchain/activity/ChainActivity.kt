@@ -441,6 +441,47 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                     }
                 }, R.drawable.ic_action_broken))
 
+        sideBarRows.add(SideBarAdapter.Div(false))
+        sideBarRows.add(getString(R.string.apps))
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.filecat), getString(R.string.filecat_desc), object : View.OnClickListener {
+            override fun onClick(view: View) {
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.setData(Uri.parse("market://details?id=com.hotpodata.filecat.free"))
+                    startActivity(intent)
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Failure to launch market intent")
+                }
+                try {
+                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
+                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                            .setAction(AnalyticsMaster.ACTION_FILECAT)
+                            .build());
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Analytics Exception");
+                }
+            }
+        }, R.mipmap.launcher_filecat))
+        sideBarRows.add(SideBarAdapter.Div(true))
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.wikicat), getString(R.string.wikicat_desc), object : View.OnClickListener {
+            override fun onClick(view: View) {
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.setData(Uri.parse("market://details?id=com.hotpodata.wikicat.free"))
+                    startActivity(intent)
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Failure to launch market intent")
+                }
+                try {
+                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
+                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                            .setAction(AnalyticsMaster.ACTION_WIKICAT)
+                            .build());
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Analytics Exception");
+                }
+            }
+        }, R.mipmap.launcher_wikicat))
 
         sideBarRows.add(SideBarAdapter.Div(false))
         sideBarRows.add(getString(R.string.acknowledgements))
@@ -559,13 +600,13 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
 
                             //We check if the current default chain has any real data
                             //if it doesn't we prepare it to be squashed, otherwise we import differently
-                            if (currentDefaultChain != null && getLaunchCount() <= 1 && currentDefaultChain.chainLength <= 1){
+                            if (currentDefaultChain != null && getLaunchCount() <= 1 && currentDefaultChain.chainLength <= 1) {
                                 Timber.d("currentDefaultChain has limited data")
-                                if(currentDefaultChain.chainContainsToday() && !importedChain.chainContainsToday()) {
+                                if (currentDefaultChain.chainContainsToday() && !importedChain.chainContainsToday()) {
                                     Timber.d("Adding now to imported chain")
                                     importedChain.addNowToChain()
                                 }
-                            }else{
+                            } else {
                                 Timber.d("Existing default chain has too much data. Fudging the imported chain.")
                                 importedChain.id = UUID.randomUUID().toString()
                                 importedChain.title = resources.getString(R.string.chain_free_version_title_template, importedChain.title)

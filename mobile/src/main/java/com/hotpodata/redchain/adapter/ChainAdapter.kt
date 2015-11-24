@@ -15,6 +15,7 @@ import android.view.animation.Interpolator
 import com.hotpodata.redchain.R
 import com.hotpodata.redchain.adapter.viewholder.ChainLinkVh
 import com.hotpodata.redchain.adapter.viewholder.ChainTodayVh
+import com.hotpodata.redchain.adapter.viewholder.RowFirstDayMessageVh
 import com.hotpodata.redchain.adapter.viewholder.VertLineVh
 import com.hotpodata.redchain.data.Chain
 import com.hotpodata.redchain.interfaces.ChainUpdateListener
@@ -32,6 +33,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
     val CHAIN_LINK = 0;
     val VERTICAL_LINE = 1;
     val CHAIN_TODAY = 2;
+    val CHAIN_FIRST_DAY_MESSAGE = 3;
 
     val rowHeadingTypeface: Typeface
     val rowSubHeadTypeface: Typeface
@@ -117,7 +119,14 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                             }
 
                             override fun onAnimationEnd(animation: Animator?) {
-                                notifyItemChanged(0)
+                                buildRows()
+                                //                                if(rows.size == 1){
+                                //                                    //If this is the first day, we add the blurb, so rebuild the rows
+                                //                                    buildRows()
+                                //                                }else{
+                                //                                    //Otherwise we just update our today row
+                                //                                    notifyItemChanged(0)
+                                //                                }
                             }
 
                             override fun onAnimationCancel(animation: Animator?) {
@@ -181,6 +190,9 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             holder.vertLine.setBackgroundColor(chain.color)
             holder.vertLine.visibility = if (data.invisible) View.INVISIBLE else View.VISIBLE;
         }
+        if (holder is RowFirstDayMessageVh) {
+            //nothing to do
+        }
     }
 
     override fun getItemCount(): Int {
@@ -194,6 +206,8 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             return CHAIN_LINK;
         } else if (rows.get(position) is RowChainToday) {
             return CHAIN_TODAY;
+        } else if (rows.get(position) is RowFirstDayMessage) {
+            return CHAIN_FIRST_DAY_MESSAGE
         }
         return -1;
     }
@@ -215,13 +229,21 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             var vh = ChainTodayVh(chainView);
             return vh;
         }
+        if (viewType == CHAIN_FIRST_DAY_MESSAGE) {
+            var messageView = inflater.inflate(R.layout.row_first_day_message, parent, false)
+            var vh = RowFirstDayMessageVh(messageView)
+            return vh
+        }
 
         return null;
     }
 
-    public fun updateChain(chn: Chain){
+    public fun updateChain(chn: Chain) {
         chain = chn
         buildRows()
+
+        //NOTE: buildRows() makes some assumptions, when we set a new chain, we should update all rows
+        notifyDataSetChanged()
     }
 
     public fun buildRows() {
@@ -248,10 +270,22 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             freshRows.add(0, RowChainLine(false))
         }
         freshRows.add(0, RowChainToday());
-        rows = freshRows
-        notifyDataSetChanged()
-    }
+        if (freshRows.size == 1 && chain.chainContainsToday()) {
+            freshRows.add(RowFirstDayMessage())
+        }
 
+        var oldRows = rows
+        rows = freshRows
+
+        if (oldRows.size == 1 && rows.size == 2) {
+            notifyItemChanged(0)
+            notifyItemInserted(1)
+        } else if (oldRows.size > 1 && rows.size == oldRows.size) {
+            notifyItemChanged(0)
+        } else {
+            notifyDataSetChanged()
+        }
+    }
 
     open class Row() {
 
@@ -265,10 +299,11 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
         val invisible = invis
     }
 
-
     class RowChainToday() : Row() {
 
     }
 
+    class RowFirstDayMessage() : Row() {
 
+    }
 }

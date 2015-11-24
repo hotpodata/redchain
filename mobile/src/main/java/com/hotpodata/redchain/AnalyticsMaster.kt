@@ -26,6 +26,8 @@ object AnalyticsMaster {
     val ACTION_RESET_TODAY = "Reset_Today"
     val ACTION_DELETE_CHAIN = "Delete_Chain"
     val ACTION_RATE_APP = "Rate_App"
+    val ACTION_FILECAT = "FileCat"
+    val ACTION_WIKICAT = "WikiCat"
     val ACTION_CONTACT = "Contact"
     val ACTION_WEBSITE = "Website"
     val ACTION_GO_PRO_SIDEBAR = "Go_Pro_Sidebar"

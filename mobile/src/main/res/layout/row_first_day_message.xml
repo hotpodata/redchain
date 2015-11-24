@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/keyline_one"
+    android:bufferType="spannable"
+    android:gravity="center"
+    android:textColor="@color/material_grey"
+    android:textSize="16dp"
+    android:text="@string/day_one_message"/>

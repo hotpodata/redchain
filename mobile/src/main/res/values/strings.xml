@@ -12,6 +12,7 @@
     <string name="toast_routing_to_pro_version_msg">Launching Pro Version</string>
     <string name="toast_data_migration">Your free version chain has been imported! Thanks for going pro!</string>
     <string name="chain_free_version_title_template">%1$s (imported)</string>
+    <string name="day_one_message">That\'s it. You\'ve done your job for today. Come back tomorrow when you\'ve completed your goal. If you skip a day, you start from scratch. Don\'t break the chain. </string>
 
     <string name="chains">Chains</string>
     <string name="create_chain">New Chain</string>
@@ -28,6 +29,12 @@
 
     <string name="visit_website">Visit Hot PoData</string>
     <string name="visit_website_blurb">Visit our website, read our blog, get updates.</string>
+
+    <string name="apps">Our other apps</string>
+    <string name="filecat">FileCat</string>
+    <string name="filecat_desc">Browse files in a colorful way!</string>
+    <string name="wikicat">WikiCat</string>
+    <string name="wikicat_desc">Browse Wiki Encyclopedia in a colorful way!</string>
 
     <string name="actions">Actions</string>
     <string name="reset_today">Reset Today Only</string>
