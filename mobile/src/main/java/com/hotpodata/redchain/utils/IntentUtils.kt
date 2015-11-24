@@ -19,15 +19,13 @@ object IntentUtils {
 
     public fun isAppInstalled(context: Context, packageName: String): Boolean {
         Timber.d("isAppInstalled:" + packageName)
-        var installed = false;
         try {
             var pm = context.packageManager;
             pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
-            installed = true;
+            return true
         } catch (e: PackageManager.NameNotFoundException) {
-            installed = false;
+            return false
         }
-        return installed;
     }
 
 
