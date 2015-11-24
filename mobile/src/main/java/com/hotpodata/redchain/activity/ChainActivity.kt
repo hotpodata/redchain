@@ -338,6 +338,8 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         }, R.drawable.ic_action_new))
 
         sideBarRows.add(getString(R.string.actions))
+
+        //GO PRO
         if (!BuildConfig.IS_PRO) {
             sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.go_pro_action), getString(R.string.go_pro_create_edit_blurb, getString(R.string.app_name)), object : View.OnClickListener {
                 override fun onClick(view: View) {
@@ -355,6 +357,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
             }, R.drawable.ic_action_go_pro))
             sideBarRows.add(SideBarAdapter.Div(true))
         }
+        //RATE US
         sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.rate_us), getString(R.string.rate_us_blerb_template, getString(R.string.app_name)), object : View.OnClickListener {
             override fun onClick(view: View) {
                 val intent = Intent(Intent.ACTION_VIEW)
@@ -374,6 +377,8 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 }
             }
         }, R.drawable.ic_action_rate))
+
+        //EMAIL
         sideBarRows.add(SideBarAdapter.Div(true))
         sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.contact_the_developer), getString(R.string.contact_email_addr_template, getString(R.string.app_name)), object : View.OnClickListener {
             override fun onClick(view: View) {
@@ -393,11 +398,49 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 }
             }
         }, R.drawable.ic_action_mail))
+
+        //TWITTER
+        sideBarRows.add(SideBarAdapter.Div(true))
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.follow_us_on_twitter), getString(R.string.twitter_handle), object : View.OnClickListener {
+            override fun onClick(view: View) {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setData(Uri.parse(getString(R.string.twitter_url)))
+                startActivity(intent)
+                try {
+                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
+                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                            .setAction(AnalyticsMaster.ACTION_TWITTER)
+                            .build());
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Analytics Exception");
+                }
+            }
+        }, R.drawable.ic_action_twitter))
+
+        //GITHUB
+        sideBarRows.add(SideBarAdapter.Div(true))
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.fork_redchain_on_github), getString(R.string.github_url), object : View.OnClickListener {
+            override fun onClick(view: View) {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setData(Uri.parse(getString(R.string.github_url)))
+                startActivity(intent)
+                try {
+                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
+                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                            .setAction(AnalyticsMaster.ACTION_TWITTER)
+                            .build());
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Analytics Exception");
+                }
+            }
+        }, R.drawable.ic_action_github))
+
+        //WEBSITE
         sideBarRows.add(SideBarAdapter.Div(true))
         sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.visit_website), getString(R.string.visit_website_blurb), object : View.OnClickListener {
             override fun onClick(view: View) {
                 val intent = Intent(Intent.ACTION_VIEW)
-                intent.setData(Uri.parse("http://www.hotpodata.com"))
+                intent.setData(Uri.parse(getString(R.string.website_url)))
                 startActivity(intent)
                 try {
                     AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()

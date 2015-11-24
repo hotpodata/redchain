@@ -30,6 +30,8 @@ object AnalyticsMaster {
     val ACTION_WIKICAT = "WikiCat"
     val ACTION_CONTACT = "Contact"
     val ACTION_WEBSITE = "Website"
+    val ACTION_TWITTER = "Twitter"
+    val ACTION_GITHUB = "GitHub"
     val ACTION_GO_PRO_SIDEBAR = "Go_Pro_Sidebar"
     val ACTION_GO_PRO_FRAGMENT = "Go_Pro_Fragment"
     val ACTION_TOGGLE_REMINDER_NOTIFICATION = "Toggle_Reminder_Notification"

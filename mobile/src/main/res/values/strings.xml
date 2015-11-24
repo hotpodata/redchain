@@ -29,6 +29,14 @@
 
     <string name="visit_website">Visit Hot PoData</string>
     <string name="visit_website_blurb">Visit our website, read our blog, get updates.</string>
+    <string name="website_url">http://www.hotpodata.com</string>
+
+    <string name="follow_us_on_twitter">Follow us on twitter</string>
+    <string name="twitter_handle">\@hotpodata</string>
+    <string name="twitter_url">https://twitter.com/hotpodata</string>
+
+    <string name="fork_redchain_on_github">Fork RedChain on github</string>
+    <string name="github_url">https://github.com/hotpodata/redchain</string>
 
     <string name="apps">Our other apps</string>
     <string name="filecat">FileCat</string>
