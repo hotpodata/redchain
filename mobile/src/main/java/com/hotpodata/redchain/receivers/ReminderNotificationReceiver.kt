@@ -6,7 +6,6 @@ import android.content.Intent
 import android.text.TextUtils
 import com.hotpodata.redchain.ChainMaster
 import com.hotpodata.redchain.NotificationMaster
-import com.hotpodata.redchain.activity.ChainActivity
 
 /**
  * Created by jdrotos on 11/7/15.
@@ -22,8 +21,8 @@ class ReminderNotificationReceiver : BroadcastReceiver() {
         }
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent != null && intent.hasExtra(ReminderNotificationReceiver.IntentGenerator.ARG_SELECTED_CHAIN)) {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.hasExtra(ReminderNotificationReceiver.IntentGenerator.ARG_SELECTED_CHAIN)) {
             var chainId = intent.getStringExtra(ReminderNotificationReceiver.IntentGenerator.ARG_SELECTED_CHAIN)
             if (!TextUtils.isEmpty(chainId)) {
                 var chain = ChainMaster.getChain(chainId)

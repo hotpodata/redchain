@@ -1,30 +1,13 @@
 package com.hotpodata.redchain.adapter
 
-import android.animation.Animator
-import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Typeface
 import android.support.v7.widget.RecyclerView
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.DecelerateInterpolator
-import android.view.animation.Interpolator
-import android.widget.AdapterView
 import com.hotpodata.redchain.R
-import com.hotpodata.redchain.adapter.viewholder.ChainLinkVh
-import com.hotpodata.redchain.adapter.viewholder.ChainTodayVh
 import com.hotpodata.redchain.adapter.viewholder.RowColorViewHolder
-import com.hotpodata.redchain.adapter.viewholder.VertLineVh
-import com.hotpodata.redchain.data.Chain
-import com.hotpodata.redchain.interfaces.ChainUpdateListener
 import com.hotpodata.redchain.interfaces.ColorSelectedListener
-import org.joda.time.Days
-import org.joda.time.LocalDate
-import org.joda.time.LocalDateTime
-import org.joda.time.format.DateTimeFormat
 import java.util.*
 
 /**
@@ -87,7 +70,7 @@ class ColorCircleAdapter(context: Context) : RecyclerView.Adapter<RecyclerView.V
     }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder? {
-        var inflater = LayoutInflater.from(parent?.getContext());
+        var inflater = LayoutInflater.from(parent?.context);
 
         if (viewType == ROW_COLOR) {
             var chainView: View? = inflater.inflate(R.layout.row_color, parent, false);

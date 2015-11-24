@@ -19,8 +19,8 @@ class BrokenChainNotificationReceiver : BroadcastReceiver() {
         }
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
-        if(intent != null && intent.hasExtra(IntentGenerator.ARG_SELECTED_CHAIN)) {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.hasExtra(IntentGenerator.ARG_SELECTED_CHAIN)) {
             var chainId = intent.getStringExtra(IntentGenerator.ARG_SELECTED_CHAIN)
             NotificationMaster.dismissReminderNotification(chainId)
             NotificationMaster.showBrokenChainNotification(chainId)

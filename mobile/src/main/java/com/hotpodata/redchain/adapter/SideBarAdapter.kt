@@ -43,35 +43,43 @@ class SideBarAdapter(ctx: Context, rows: List<Any>) : RecyclerView.Adapter<Recyc
 
     public fun setAccentColor(color: Int) {
         mColor = color;
-        if (getItemCount() > 0 && getItemViewType(0) == ROW_TYPE_HEADER) {
+        if (itemCount > 0 && getItemViewType(0) == ROW_TYPE_HEADER) {
             notifyItemChanged(0)
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder? {
         val inflater = LayoutInflater.from(parent.context)
-        if (viewType == ROW_TYPE_HEADER) {
-            val v = inflater.inflate(R.layout.row_sidebar_section_header, parent, false)
-            return SideBarSectionHeaderViewHolder(v)
-        } else if (viewType == ROW_TYPE_ONE_LINE || viewType == ROW_TYPE_NEW_CHAIN) {
-            val v = inflater.inflate(R.layout.row_text_one_line, parent, false)
-            return RowTextOneLineViewHolder(v)
-        } else if (viewType == ROW_TYPE_TWO_LINE) {
-            val v = inflater.inflate(R.layout.row_text_two_line, parent, false)
-            return RowTextTwoLineViewHolder(v)
-        } else if (viewType == ROW_TYPE_DIV || viewType == ROW_TYPE_DIV_INSET) {
-            val v = inflater.inflate(R.layout.row_div, parent, false)
-            return RowDivViewHolder(v)
-        } else if (viewType == ROW_TYPE_SIDE_BAR_HEADING) {
-            val v = inflater.inflate(R.layout.row_sidebar_header, parent, false)
-            return SideBarHeaderViewHolder(v)
-        } else if (viewType == ROW_TYPE_CHAIN) {
-            val v = inflater.inflate(R.layout.row_chain_two_line, parent, false)
-            return RowChainViewHolder(v)
+        return when (viewType) {
+            ROW_TYPE_HEADER -> {
+                val v = inflater.inflate(R.layout.row_sidebar_section_header, parent, false)
+                SideBarSectionHeaderViewHolder(v)
+            }
+            ROW_TYPE_ONE_LINE, ROW_TYPE_NEW_CHAIN -> {
+                val v = inflater.inflate(R.layout.row_text_one_line, parent, false)
+                RowTextOneLineViewHolder(v)
+            }
+            ROW_TYPE_TWO_LINE -> {
+                val v = inflater.inflate(R.layout.row_text_two_line, parent, false)
+                RowTextTwoLineViewHolder(v)
+            }
+            ROW_TYPE_DIV, ROW_TYPE_DIV_INSET -> {
+                val v = inflater.inflate(R.layout.row_div, parent, false)
+                RowDivViewHolder(v)
+            }
+            ROW_TYPE_SIDE_BAR_HEADING -> {
+                val v = inflater.inflate(R.layout.row_sidebar_header, parent, false)
+                SideBarHeaderViewHolder(v)
+            }
+            ROW_TYPE_CHAIN -> {
+                val v = inflater.inflate(R.layout.row_chain_two_line, parent, false)
+                RowChainViewHolder(v)
+            }
+            else -> null
         }
-        return null
     }
 
+    @Suppress("DEPRECATION")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val type = getItemViewType(position)
         val objData = mRows[position]
@@ -86,12 +94,12 @@ class SideBarAdapter(ctx: Context, rows: List<Any>) : RecyclerView.Adapter<Recyc
             ROW_TYPE_HEADER -> {
                 val vh = holder as SideBarSectionHeaderViewHolder
                 val data = objData as String
-                vh.mTitleTv.setText(data)
+                vh.mTitleTv.text = data
             }
             ROW_TYPE_ONE_LINE, ROW_TYPE_NEW_CHAIN -> {
                 val vh = holder as RowTextOneLineViewHolder
                 val data = objData as SettingsRow
-                vh.mTextOne.setText(data.title)
+                vh.mTextOne.text = data.title
                 vh.itemView.setOnClickListener(data.onClickListener)
                 if (data.iconResId != -1) {
                     vh.mIcon.setImageResource(data.iconResId)
@@ -104,8 +112,8 @@ class SideBarAdapter(ctx: Context, rows: List<Any>) : RecyclerView.Adapter<Recyc
             ROW_TYPE_TWO_LINE -> {
                 val vh = holder as RowTextTwoLineViewHolder
                 val data = objData as SettingsRow
-                vh.mTextOne.setText(data.title)
-                vh.mTextTwo.setText(data.subTitle)
+                vh.mTextOne.text = data.title
+                vh.mTextTwo.text = data.subTitle
                 vh.itemView.setOnClickListener(data.onClickListener)
                 if (data.iconResId != -1) {
                     vh.mIcon.setImageResource(data.iconResId)
@@ -119,9 +127,9 @@ class SideBarAdapter(ctx: Context, rows: List<Any>) : RecyclerView.Adapter<Recyc
                 val vh = holder as RowDivViewHolder
                 val data = objData as Div
                 if (data.isInset) {
-                    vh.mSpacer.setVisibility(View.VISIBLE)
+                    vh.mSpacer.visibility = View.VISIBLE
                 } else {
-                    vh.mSpacer.setVisibility(View.GONE)
+                    vh.mSpacer.visibility = View.GONE
                 }
             }
 
@@ -162,34 +170,27 @@ class SideBarAdapter(ctx: Context, rows: List<Any>) : RecyclerView.Adapter<Recyc
     }
 
     override fun getItemCount(): Int {
-        return mRows!!.size
+        return mRows.size
     }
 
     override fun getItemViewType(position: Int): Int {
         val data = mRows[position]
-        if (data is String) {
-            return ROW_TYPE_HEADER
-        } else if (data is RowCreateChain) {
-            return ROW_TYPE_NEW_CHAIN
-        } else if (data is SettingsRow) {
-            if (TextUtils.isEmpty((data as SettingsRow).subTitle)) {
-                return ROW_TYPE_ONE_LINE
+        return when (data) {
+            is String -> ROW_TYPE_HEADER
+            is RowCreateChain -> ROW_TYPE_NEW_CHAIN
+            is SettingsRow -> if (TextUtils.isEmpty(data.subTitle)) {
+                ROW_TYPE_ONE_LINE
             } else {
-                return ROW_TYPE_TWO_LINE
+                ROW_TYPE_TWO_LINE
             }
-        } else if (data is Div) {
-            if ((data as Div).isInset) {
-                return ROW_TYPE_DIV_INSET
+            is Div -> if (data.isInset) {
+                ROW_TYPE_DIV_INSET
             } else {
-                return ROW_TYPE_DIV
+                ROW_TYPE_DIV
             }
-        } else if (data is SideBarHeading) {
-            return ROW_TYPE_SIDE_BAR_HEADING
-        } else if (data is RowChain) {
-            return ROW_TYPE_CHAIN
-
-        } else {
-            return super.getItemViewType(position)
+            is SideBarHeading -> ROW_TYPE_SIDE_BAR_HEADING
+            is RowChain -> ROW_TYPE_CHAIN
+            else -> super.getItemViewType(position)
         }
     }
 
