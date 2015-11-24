@@ -1,11 +1,8 @@
 package com.hotpodata.redchain.activity
 
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.res.Configuration
 import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.FloatingActionButton
@@ -19,19 +16,11 @@ import android.widget.EditText
 import com.google.android.gms.analytics.HitBuilders
 import com.hotpodata.redchain.AnalyticsMaster
 import com.hotpodata.redchain.ChainMaster
-import com.hotpodata.redchain.NotificationMaster
 import com.hotpodata.redchain.R
-import com.hotpodata.redchain.adapter.ChainAdapter
 import com.hotpodata.redchain.adapter.ColorCircleAdapter
-import com.hotpodata.redchain.adapter.SideBarAdapter
 import com.hotpodata.redchain.data.Chain
-import com.hotpodata.redchain.interfaces.ChainUpdateListener
 import com.hotpodata.redchain.interfaces.ColorSelectedListener
-import org.joda.time.LocalDateTime
-import org.json.JSONArray
-import org.json.JSONObject
 import timber.log.Timber
-import java.util.*
 
 /**
  * Created by jdrotos on 9/16/15.
@@ -81,8 +70,8 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
         supportActionBar.setHomeButtonEnabled(true)
 
         if (savedInstanceState != null) {
-            titleEt?.setText(savedInstanceState?.getString(STATE_TITLE, ""))
-            colorAdapter?.selectedColor = savedInstanceState?.getInt(STATE_COLOR, Color.RED)
+            titleEt?.setText(savedInstanceState.getString(STATE_TITLE, ""))
+            colorAdapter?.selectedColor = savedInstanceState.getInt(STATE_COLOR, Color.RED)
         } else {
             var chain = getChainFromIntent()
             if (chain != null) {
@@ -104,7 +93,7 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
                     ChainMaster.saveChain(chain)
 
                     try {
-                        AnalyticsMaster.getTracker(this@ChainEditActivity)?.send(HitBuilders.EventBuilder()
+                        AnalyticsMaster.getTracker(this@ChainEditActivity).send(HitBuilders.EventBuilder()
                                 .setCategory(AnalyticsMaster.CATEGORY_ACTION)
                                 .setAction(AnalyticsMaster.ACTION_SAVE)
                                 .build());
@@ -121,7 +110,7 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
             }
         })
 
-        var actionbar = getSupportActionBar()
+        var actionbar = supportActionBar
         if (getChainFromIntent() == null) {
             actionbar?.title = resources.getString(R.string.create_chain)
         } else {
@@ -133,8 +122,8 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
         super.onResume()
         var screenName = if (getChainFromIntent() == null) AnalyticsMaster.SCREEN_NEW else AnalyticsMaster.SCREEN_EDIT
         Timber.i("Setting screen name:" + screenName);
-        AnalyticsMaster.getTracker(this)?.setScreenName(screenName);
-        AnalyticsMaster.getTracker(this)?.send(HitBuilders.ScreenViewBuilder().build());
+        AnalyticsMaster.getTracker(this).setScreenName(screenName);
+        AnalyticsMaster.getTracker(this).send(HitBuilders.ScreenViewBuilder().build());
 
         setColor(getColorFromPicker(), false)
     }
@@ -160,7 +149,7 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
     }
 
     fun getChainFromIntent(): Chain? {
-        var intent = getIntent()
+        var intent = intent
         var chain: Chain? = null;
         if (intent != null && intent.hasExtra(IntentGenerator.ARG_SELECTED_CHAIN_ID)) {
             chain = ChainMaster.getChain(intent.getStringExtra(IntentGenerator.ARG_SELECTED_CHAIN_ID))
@@ -171,7 +160,7 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
     fun validate(): Boolean {
         if (TextUtils.isEmpty(getTitleFromEditText())) {
             if (titleEt != null) {
-                titleEt?.setError(resources.getString(R.string.error_invalid_title))
+                titleEt?.error = resources.getString(R.string.error_invalid_title)
             }
             return false;
         }
@@ -191,7 +180,7 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
     override fun onColorSelected(color: Int) {
         setColor(color, true)
         try {
-            AnalyticsMaster.getTracker(this)?.send(HitBuilders.EventBuilder()
+            AnalyticsMaster.getTracker(this).send(HitBuilders.EventBuilder()
                     .setCategory(AnalyticsMaster.CATEGORY_ACTION)
                     .setAction(AnalyticsMaster.ACTION_CHANGE_COLOR)
                     .setLabel(AnalyticsMaster.LABEL_COLOR)

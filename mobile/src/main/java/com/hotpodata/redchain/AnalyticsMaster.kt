@@ -43,14 +43,14 @@ object AnalyticsMaster {
     val LABEL_COLOR = "Color"
 
     private var tracker: Tracker? = null
-    public fun getTracker(context: Context): Tracker? {
-        if (tracker == null) {
-            var analytics = GoogleAnalytics.getInstance(context)
-            tracker = analytics.newTracker(R.xml.global_tracker)
-            tracker?.enableExceptionReporting(true);
-            tracker?.enableAdvertisingIdCollection(true);
-            tracker?.enableAutoActivityTracking(true);
-        }
-        return tracker
+    public fun getTracker(context: Context): Tracker {
+        val t = tracker ?:
+                GoogleAnalytics.getInstance(context).newTracker(R.xml.global_tracker).apply {
+                    enableExceptionReporting(true)
+                    enableAdvertisingIdCollection(true)
+                    enableAutoActivityTracking(true)
+                }
+        tracker = t
+        return t
     }
 }

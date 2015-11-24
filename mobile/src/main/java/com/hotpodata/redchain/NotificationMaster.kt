@@ -4,8 +4,6 @@ import android.app.AlarmManager
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
 import android.support.v4.app.NotificationManagerCompat
 import android.support.v7.app.NotificationCompat
 import com.hotpodata.redchain.activity.ChainActivity

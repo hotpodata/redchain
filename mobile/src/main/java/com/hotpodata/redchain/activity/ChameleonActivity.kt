@@ -1,9 +1,11 @@
 package com.hotpodata.redchain.activity
 
-import android.animation.*
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.app.ActivityManager
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
@@ -38,24 +40,14 @@ open class ChameleonActivity : AppCompatActivity() {
             mLastBarColor = color
         }
         if (animate && mResumed && color != mLastBarColor) {
-            if (mBarColorAnimator != null) {
-                mBarColorAnimator?.cancel()
-            }
+            mBarColorAnimator?.cancel()
             val animator = ValueAnimator.ofObject(ArgbEvaluator(), mLastBarColor, color).setDuration(500)
-            animator.addUpdateListener(object : ValueAnimator.AnimatorUpdateListener {
-                override fun onAnimationUpdate(animation: ValueAnimator) {
-                    if (mAbBackgroundDrawable != null) {
-                        (mAbBackgroundDrawable as ColorDrawable).color = animation.animatedValue as Int
-                    }
-                    if (mAbSplitBackgroundDrawable != null) {
-                        (mAbSplitBackgroundDrawable as ColorDrawable).color = animation.animatedValue as Int
-                    }
-                    if (mActionToolbarBackgroundDrawable != null) {
-                        (mActionToolbarBackgroundDrawable as ColorDrawable).color = animation.animatedValue as Int
-                    }
-                    updateStatusBarColor(animation.animatedValue as Int)
-                }
-            })
+            animator.addUpdateListener { animation ->
+                (mAbBackgroundDrawable as? ColorDrawable)?.color = animation.animatedValue as Int
+                (mAbSplitBackgroundDrawable as? ColorDrawable)?.color = animation.animatedValue as Int
+                (mActionToolbarBackgroundDrawable as? ColorDrawable)?.color = animation.animatedValue as Int
+                updateStatusBarColor(animation.animatedValue as Int)
+            }
             animator.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
                     updateActionBarColors(color)
@@ -64,13 +56,11 @@ open class ChameleonActivity : AppCompatActivity() {
             })
             mBarColorAnimator = animator
             animator.start()
-        } else if ((!animate || !mResumed) && (mBarColorAnimator == null || !mBarColorAnimator!!.isRunning())) {
+        } else if ((!animate || !mResumed) && (mBarColorAnimator == null || !mBarColorAnimator!!.isRunning)) {
             updateActionBarColors(color)
             updateStatusBarColor(color)
         }
     }
-
-
 
 
     protected fun updateActionBarColors(color: Int) {
@@ -78,44 +68,32 @@ open class ChameleonActivity : AppCompatActivity() {
             val abBackground = ColorDrawable(color)
             val abSplitBackground = ColorDrawable(color)
             val actionToolbarBg = ColorDrawable(color)
-            if (mAbBackgroundDrawable != null && mAbBackgroundDrawable?.getBounds() != null && mAbBackgroundDrawable!!.getBounds().width() > 0) {
-                abBackground.bounds = mAbBackgroundDrawable?.getBounds()
+            if (mAbBackgroundDrawable?.bounds?.width()?.let { it > 0 } ?: false) {
+                abBackground.bounds = mAbBackgroundDrawable?.bounds
             }
-            if (mAbSplitBackgroundDrawable != null && mAbSplitBackgroundDrawable?.getBounds() != null && mAbSplitBackgroundDrawable!!.getBounds().width() > 0) {
-                abSplitBackground.bounds = mAbSplitBackgroundDrawable?.getBounds()
+            if (mAbSplitBackgroundDrawable?.bounds?.width()?.let { it > 0 } ?: false) {
+                abSplitBackground.bounds = mAbSplitBackgroundDrawable?.bounds
             }
-            if (mActionToolbarBackgroundDrawable != null && mActionToolbarBackgroundDrawable?.getBounds() != null && mActionToolbarBackgroundDrawable!!.getBounds().width() > 0) {
-                actionToolbarBg.bounds = mActionToolbarBackgroundDrawable?.getBounds()
+            if (mActionToolbarBackgroundDrawable?.bounds?.width()?.let { it > 0 } ?: false) {
+                actionToolbarBg.bounds = mActionToolbarBackgroundDrawable?.bounds
             }
             mAbBackgroundDrawable = abBackground
             mAbSplitBackgroundDrawable = abSplitBackground
             mActionToolbarBackgroundDrawable = actionToolbarBg
         } else {
-            if (mAbBackgroundDrawable != null) {
-                (mAbBackgroundDrawable as ColorDrawable).color = color
-            }
-            if (mAbSplitBackgroundDrawable != null) {
-                (mAbSplitBackgroundDrawable as ColorDrawable).color = color
-            }
-            if (mActionToolbarBackgroundDrawable != null) {
-                (mActionToolbarBackgroundDrawable as ColorDrawable).color = color
-            }
+            (mAbBackgroundDrawable as? ColorDrawable)?.color = color
+            (mAbSplitBackgroundDrawable as? ColorDrawable)?.color = color
+            (mActionToolbarBackgroundDrawable as? ColorDrawable)?.color = color
         }
 
-        val bar = supportActionBar
-        if (bar != null) {
-            bar.setBackgroundDrawable(mAbBackgroundDrawable)
-            bar.setSplitBackgroundDrawable(mAbSplitBackgroundDrawable)
-            bar.invalidateOptionsMenu()
+        supportActionBar?.apply {
+            setBackgroundDrawable(mAbBackgroundDrawable)
+            setSplitBackgroundDrawable(mAbSplitBackgroundDrawable)
+            invalidateOptionsMenu()
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            var title: String? = null
-            if (getTitle() != null) {
-                title = getTitle().toString()
-            } else {
-                title = getString(R.string.app_name)
-            }
+            var title = title?.toString() ?: getString(R.string.app_name)
             setTaskDescription(ActivityManager.TaskDescription(title, null, color))
         }
         mLastBarColor = color

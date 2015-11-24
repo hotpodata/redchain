@@ -39,6 +39,7 @@ object ChainMaster {
         ensureValidData()
     }
 
+    @Suppress("DEPRECATION")
     private fun ensureValidData() {
         if (allChains.size <= 0) {
             //WE DONT HAVE ANY REAL DATA??
@@ -47,7 +48,7 @@ object ChainMaster {
             setSelectedChain(chain.id)
             Timber.d("ensureValidData - Setting selected chain:" + chain.title + " id:" + chain.id)
         }
-        if (!allChains.containsKey(selectedChainId as String)) {
+        if (!allChains.containsKey(selectedChainId)) {
             //WE DONT HAVE DATA FOR OUR SELECTED CHAIN...
             Timber.d("ensureValidData - selectedChainId not found");
             var chain = allChains.get(allChains.keys.first())
@@ -214,33 +215,30 @@ object ChainMaster {
     }
 
 
-
     fun chainFromJson(chainJsonStr: String): Chain? {
         try {
             if (!TextUtils.isEmpty(chainJsonStr)) {
                 var chainjson = JSONObject(chainJsonStr)
-                if (chainjson != null) {
-                    var chainId: String? = null
-                    var chainName: String? = null
-                    var chainColor: Int? = null
-                    var chainDates: MutableSet<LocalDateTime>? = null
-                    if (chainjson.has(JSON_KEY_CHAINID) && chainjson.has(JSON_KEY_CHAINNAME) && chainjson.has(JSON_KEY_CHAINCOLOR)) {
-                        chainId = chainjson.getString(JSON_KEY_CHAINID)
-                        chainName = chainjson.getString(JSON_KEY_CHAINNAME)
-                        chainColor = chainjson.getInt(JSON_KEY_CHAINCOLOR)
-                    }
-                    if (chainName != null && chainjson.has(JSON_KEY_CHAINDATES)) {
-                        chainDates = HashSet<LocalDateTime>()
-                        var jsonarrDates = chainjson.getJSONArray(JSON_KEY_CHAINDATES)
-                        if (jsonarrDates.length() > 0) {
-                            for (i in 0..(jsonarrDates.length() - 1)) {
-                                chainDates.add(LocalDateTime.parse(jsonarrDates.get(i).toString()))
-                            }
+                var chainId: String? = null
+                var chainName: String? = null
+                var chainColor: Int? = null
+                var chainDates: MutableSet<LocalDateTime>? = null
+                if (chainjson.has(JSON_KEY_CHAINID) && chainjson.has(JSON_KEY_CHAINNAME) && chainjson.has(JSON_KEY_CHAINCOLOR)) {
+                    chainId = chainjson.getString(JSON_KEY_CHAINID)
+                    chainName = chainjson.getString(JSON_KEY_CHAINNAME)
+                    chainColor = chainjson.getInt(JSON_KEY_CHAINCOLOR)
+                }
+                if (chainName != null && chainjson.has(JSON_KEY_CHAINDATES)) {
+                    chainDates = HashSet<LocalDateTime>()
+                    var jsonarrDates = chainjson.getJSONArray(JSON_KEY_CHAINDATES)
+                    if (jsonarrDates.length() > 0) {
+                        for (i in 0..(jsonarrDates.length() - 1)) {
+                            chainDates.add(LocalDateTime.parse(jsonarrDates.get(i).toString()))
                         }
                     }
-                    if (chainId != null && chainName != null && chainColor != null && chainDates != null) {
-                        return Chain(chainId, chainName, chainColor, ArrayList<LocalDateTime>(chainDates))
-                    }
+                }
+                if (chainId != null && chainName != null && chainColor != null && chainDates != null) {
+                    return Chain(chainId, chainName, chainColor, ArrayList<LocalDateTime>(chainDates))
                 }
             }
         } catch(ex: Exception) {
@@ -250,14 +248,14 @@ object ChainMaster {
     }
 
     val BUNDLE_KEY_CHAIN_JSON = "BUNDLE_KEY_CHAIN_JSON"
-    fun chainToBundle(chain: Chain): Bundle{
+    fun chainToBundle(chain: Chain): Bundle {
         var bundle = Bundle()
         bundle.putString(BUNDLE_KEY_CHAIN_JSON, chainToJson(chain).toString())
         return bundle
     }
 
-    fun chainFromBundle(bundle: Bundle?): Chain?{
-        if(bundle != null && bundle.containsKey(BUNDLE_KEY_CHAIN_JSON)){
+    fun chainFromBundle(bundle: Bundle?): Chain? {
+        if (bundle != null && bundle.containsKey(BUNDLE_KEY_CHAIN_JSON)) {
             return chainFromJson(bundle.getString(BUNDLE_KEY_CHAIN_JSON))
         }
         return null;

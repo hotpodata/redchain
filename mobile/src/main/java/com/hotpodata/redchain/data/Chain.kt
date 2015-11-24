@@ -16,12 +16,9 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
     }
 
     var id: String
-        get
     var title: String
-        get
     var dateTimes: List<LocalDateTime>
     var color: Int
-        get
 
     init {
         id = chainId

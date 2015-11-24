@@ -1,11 +1,7 @@
 package com.hotpodata.redchain
 
 import android.support.multidex.MultiDexApplication
-import com.google.android.gms.analytics.GoogleAnalytics
-import com.google.android.gms.analytics.Tracker
-import com.hotpodata.redchain.data.Chain
 import timber.log.Timber
-import java.util.*
 
 /**
  * Created by jdrotos on 9/17/15.

@@ -1,5 +1,6 @@
 package com.hotpodata.redchain.view
 
+
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -8,13 +9,9 @@ import android.graphics.Rect
 import android.os.Build
 import android.util.AttributeSet
 import android.view.View
-import android.view.ViewTreeObserver
-
-
 import org.joda.time.DateTimeConstants
 import org.joda.time.Days
 import org.joda.time.LocalDate
-import org.joda.time.format.DateTimeFormatter
 import timber.log.Timber
 
 /**
@@ -226,16 +223,16 @@ public class WeekChainView : View {
 
     override fun onDraw(canvas: Canvas) {
         var daysFromStart = 0;
-        if (mHighlightedStartDate != null && mHighlightedStartDate!!.isAfter(mStartLocalDate)) {
+        if (mHighlightedStartDate?.isAfter(mStartLocalDate) == true) {
             daysFromStart = Days.daysBetween(mStartLocalDate, mHighlightedStartDate).days
         }
         var daysFromEnd = 0;
-        if (mHighlightedEndDate != null && mHighlightedEndDate!!.isBefore(mStartLocalDate!!.plusDays(mDateSpan))) {
+        if (mHighlightedEndDate?.isBefore(mStartLocalDate!!.plusDays(mDateSpan)) == true) {
             daysFromEnd = Days.daysBetween(mHighlightedEndDate, mStartLocalDate?.plusDays(mDateSpan)).days
         }
         val spanStart = mStartX + (daysFromStart * mSectionWidth)
         var spanLength = mDateSpan - daysFromStart - daysFromEnd;
-        Timber.d("daysFromStart:" + daysFromStart + " daysFromEnd:" + daysFromEnd + " spanStart:" + spanStart + " spanLength:" + spanLength + " mHightlightStartDate:" + mHighlightedStartDate + " mHightlightEndDate:" + mHighlightedEndDate);
+        Timber.d("daysFromStart:$daysFromStart daysFromEnd:$daysFromEnd spanStart:$spanStart spanLength:$spanLength mHightlightStartDate:$mHighlightedStartDate mHightlightEndDate:$mHighlightedEndDate");
         if (mHighlightedStartDate == null || mHighlightedEndDate == null) {
             spanLength = 0
         }
@@ -245,25 +242,25 @@ public class WeekChainView : View {
 
         for (i in 0..mDateSpan - 1) {
             val day = LocalDate(mStartLocalDate).plusDays(i)
-            var boderPaint: Paint? = null
-            var circlePaint: Paint? = mPaintCircleNoTasks
-            var textPaint: Paint? = mPaintTextNoTasks
+            val borderPaint: Paint?
+            val circlePaint: Paint?
+            val textPaint: Paint?
 
             if (mActiveLocalDate != null && mActiveLocalDate!!.equals(day)) {
                 //active
-                boderPaint = mPaintBorderToday
+                borderPaint = mPaintBorderToday
                 circlePaint = mPaintCircleSomeTasksComplete
                 textPaint = mPaintTextSomeTasksComplete
             } else if (mHighlightedStartDate != null && mHighlightedEndDate != null && i >= daysFromStart && i < mDateSpan - daysFromStart) {
                 //highlighted
                 circlePaint = mPaintCircleAllTasksCompleteInStreak;
                 textPaint = mPaintTextAllTasksCompleteInStreak;
-                boderPaint = null
+                borderPaint = null
             } else {
                 //out of range
                 circlePaint = mPaintCircleNoTasksComplete
                 textPaint = mPaintTextNoTasksComplete
-                boderPaint = null
+                borderPaint = null
             }
 
             //            if (day.isAfter(mActiveLocalDate)) {
@@ -284,8 +281,8 @@ public class WeekChainView : View {
             //            }
 
 
-            if (boderPaint != null) {
-                canvas.drawCircle((mStartX + (i * mSectionWidth)).toFloat(), mCenterY.toFloat(), (mCircleRadius + mBorderThickness).toFloat(), boderPaint)
+            if (borderPaint != null) {
+                canvas.drawCircle((mStartX + (i * mSectionWidth)).toFloat(), mCenterY.toFloat(), (mCircleRadius + mBorderThickness).toFloat(), borderPaint)
             }
             canvas.drawCircle((mStartX + (i * mSectionWidth)).toFloat(), mCenterY.toFloat(), mCircleRadius.toFloat(), circlePaint)
             var dayText = day.dayOfWeek().asText.toUpperCase().substring(0, 1)
@@ -293,7 +290,7 @@ public class WeekChainView : View {
                 dayText = "" + day.dayOfMonth
             }
             val textBounds = Rect()
-            textPaint?.getTextBounds(dayText, 0, dayText.length(), textBounds)
+            textPaint?.getTextBounds(dayText, 0, dayText.length, textBounds)
             canvas.drawText(dayText, (mStartX + (i * mSectionWidth)).toFloat(), mCenterY + (textBounds.height() / 2f), textPaint)
         }
 

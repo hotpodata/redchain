@@ -1,6 +1,7 @@
 package com.hotpodata.redchain.adapter
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Typeface
@@ -67,6 +68,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
         buildRows()
     }
 
+    @Suppress("DEPRECATION")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
         if (holder is ChainTodayVh) {
             var headingTypeface = rowHeadingTypeface
@@ -97,58 +99,43 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                 holder.xview.isClickable = true
                 holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
                 holder.xview.boxToXPercentage = 0f
-                holder.xview.setOnClickListener(object : View.OnClickListener {
-                    override fun onClick(v: View?) {
+                holder.xview.setOnClickListener {
+                    //update data
+                    chain.addNowToChain();
+                    chainUpdateListener?.onChainUpdated(chain)
 
-                        //update data
-                        chain.addNowToChain();
-                        chainUpdateListener?.onChainUpdated(chain)
+                    //start anim
+                    var start = if (holder.xview.boxToXPercentage == 1f) 1f else 0f;
+                    var end = if (holder.xview.boxToXPercentage == 1f) 0f else 1f;
 
-                        //start anim
-                        var start = if (holder.xview.boxToXPercentage == 1f) 1f else 0f;
-                        var end = if (holder.xview.boxToXPercentage == 1f) 0f else 1f;
-
-                        holder.xview.boxToXPercentage = start;
-                        var animator = ValueAnimator.ofFloat(start, end)
-                        animator.addUpdateListener { anim ->
-                            holder.xview.boxToXPercentage = anim.animatedFraction
-                        }
-                        animator.addListener(object : Animator.AnimatorListener {
-                            override fun onAnimationRepeat(animation: Animator?) {
-
-                            }
-
-                            override fun onAnimationEnd(animation: Animator?) {
-                                buildRows()
-                                //                                if(rows.size == 1){
-                                //                                    //If this is the first day, we add the blurb, so rebuild the rows
-                                //                                    buildRows()
-                                //                                }else{
-                                //                                    //Otherwise we just update our today row
-                                //                                    notifyItemChanged(0)
-                                //                                }
-                            }
-
-                            override fun onAnimationCancel(animation: Animator?) {
-
-                            }
-
-                            override fun onAnimationStart(animation: Animator?) {
-
-                            }
-                        })
-                        animator.interpolator = AccelerateDecelerateInterpolator()
-                        animator.setDuration(700)
-                        animator.start()
+                    holder.xview.boxToXPercentage = start;
+                    var animator = ValueAnimator.ofFloat(start, end)
+                    animator.addUpdateListener { anim ->
+                        holder.xview.boxToXPercentage = anim.animatedFraction
                     }
-                })
+                    animator.addListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator?) {
+                            buildRows()
+                            //                                if(rows.size == 1){
+                            //                                    //If this is the first day, we add the blurb, so rebuild the rows
+                            //                                    buildRows()
+                            //                                }else{
+                            //                                    //Otherwise we just update our today row
+                            //                                    notifyItemChanged(0)
+                            //                                }
+                        }
+                    })
+                    animator.interpolator = AccelerateDecelerateInterpolator()
+                    animator.setDuration(700)
+                    animator.start()
+                }
             }
         }
 
         if (holder is ChainLinkVh) {
             var titleHeight = Math.max(rowMinTitleSize, rowMaxTitleSize - position).toFloat()//rowMinTitleSize + (floatDepth * (rowMaxTitleSize - rowMinTitleSize))
 
-            var data = rows.get(position) as RowChainLink
+            var data = rows[position] as RowChainLink
             var headingTypeface = rowHeadingTypeface
 
             holder.itemView.setOnClickListener(null)
@@ -165,18 +152,17 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                 holder.tv2.typeface = rowSubHeadTypeface
             }
 
-            var dateStr = ctx.getText(R.string.today)
-            if (data.dateTime.toLocalDate().plusDays(1).isEqual(LocalDate.now())) {
-                dateStr = ctx.getText(R.string.yesterday)
+            val dateStr = if (data.dateTime.toLocalDate().plusDays(1).isEqual(LocalDate.now())) {
+                ctx.getText(R.string.yesterday)
             } else if (Days.daysBetween(data.dateTime.toLocalDate(), LocalDate.now()).days < 7) {
-                dateStr = data.dateTime.toString(dtformat1)
+                data.dateTime.toString(dtformat1)
             } else {
-                dateStr = data.dateTime.toString(dtformat2)
+                data.dateTime.toString(dtformat2)
             }
 
-            var timeStr = data.dateTime.toString(dtformat3)
+            val timeStr = data.dateTime.toString(dtformat3)
 
-            var depth = chain.chainLength - chain.chainDepth(data.dateTime)
+            val depth = chain.chainLength - chain.chainDepth(data.dateTime)
             holder.tv1.text = ctx.resources.getString(R.string.day_num, depth)
             holder.tv2.text = "$dateStr\n$timeStr";
         }
@@ -200,7 +186,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
     }
 
     override fun getItemViewType(position: Int): Int {
-        if (rows.get(position) is RowChainLine) {
+        if (rows[position] is RowChainLine) {
             return VERTICAL_LINE;
         } else if (rows.get(position) is RowChainLink) {
             return CHAIN_LINK;
@@ -213,7 +199,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
     }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder? {
-        var inflater = LayoutInflater.from(parent?.getContext());
+        var inflater = LayoutInflater.from(parent?.context);
 
         if (viewType == CHAIN_LINK) {
             var chainView: View? = inflater.inflate(R.layout.card_chain_link_center, parent, false);

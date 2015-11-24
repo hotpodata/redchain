@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.hotpodata.redchain.R
-import com.hotpodata.redchain.view.WeekChainView
 import com.hotpodata.redchain.view.XView
 
 /**

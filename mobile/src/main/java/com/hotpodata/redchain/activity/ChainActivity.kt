@@ -1,6 +1,9 @@
 package com.hotpodata.redchain.activity
 
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
@@ -9,18 +12,14 @@ import android.support.design.widget.AppBarLayout
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
-import android.text.TextUtils
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.analytics.HitBuilders
-import com.google.android.gms.analytics.Tracker
 import com.hotpodata.redchain.*
 import com.hotpodata.redchain.adapter.ChainAdapter
 import com.hotpodata.redchain.adapter.SideBarAdapter
@@ -29,9 +28,6 @@ import com.hotpodata.redchain.fragment.GoProChainFragment
 import com.hotpodata.redchain.interfaces.ChainUpdateListener
 import com.hotpodata.redchain.service.FreeVersionMigrationService
 import com.hotpodata.redchain.utils.IntentUtils
-import org.joda.time.LocalDateTime
-import org.json.JSONArray
-import org.json.JSONObject
 import timber.log.Timber
 import java.util.*
 
@@ -150,15 +146,15 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         }
 
         Timber.i("Setting screen name:" + AnalyticsMaster.SCREEN_CHAIN);
-        AnalyticsMaster.getTracker(this)?.setScreenName(AnalyticsMaster.SCREEN_CHAIN);
-        AnalyticsMaster.getTracker(this)?.send(HitBuilders.ScreenViewBuilder().build());
+        AnalyticsMaster.getTracker(this).setScreenName(AnalyticsMaster.SCREEN_CHAIN);
+        AnalyticsMaster.getTracker(this).send(HitBuilders.ScreenViewBuilder().build());
 
         ChainMaster.expireExpiredChains()
         refreshChain()
     }
 
     public override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        var inflater = getMenuInflater()
+        var inflater = menuInflater
         inflater.inflate(R.menu.chain_menu, menu)
         return true;
     }
@@ -187,7 +183,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 startActivity(intent)
 
                 try {
-                    AnalyticsMaster.getTracker(this)?.send(HitBuilders.EventBuilder()
+                    AnalyticsMaster.getTracker(this).send(HitBuilders.EventBuilder()
                             .setCategory(AnalyticsMaster.CATEGORY_ACTION)
                             .setAction(AnalyticsMaster.ACTION_EDIT_CHAIN)
                             .build());
@@ -203,7 +199,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 ChainMaster.saveChain(chain)
                 refreshChain()
                 try {
-                    AnalyticsMaster.getTracker(this)?.send(HitBuilders.EventBuilder()
+                    AnalyticsMaster.getTracker(this).send(HitBuilders.EventBuilder()
                             .setCategory(AnalyticsMaster.CATEGORY_ACTION)
                             .setAction(AnalyticsMaster.ACTION_RESET_TODAY)
                             .build());
@@ -217,27 +213,26 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 var builder = AlertDialog.Builder(this)
                 builder.setMessage(R.string.reset_chain_confirm)
                 builder.setCancelable(true)
-                builder.setPositiveButton(R.string.reset,
-                        DialogInterface.OnClickListener {
-                            dialogInterface, i ->
-                            var chain = ChainMaster.getSelectedChain()
-                            chain.clearDates()
-                            ChainMaster.saveChain(chain)
-                            refreshChain()
-                            drawerLayout?.closeDrawers()
+                builder.setPositiveButton(R.string.reset) {
+                    dialogInterface, i ->
+                    var chain = ChainMaster.getSelectedChain()
+                    chain.clearDates()
+                    ChainMaster.saveChain(chain)
+                    refreshChain()
+                    drawerLayout?.closeDrawers()
 
-                            try {
-                                AnalyticsMaster.getTracker(this)?.send(HitBuilders.EventBuilder()
-                                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                                        .setAction(AnalyticsMaster.ACTION_RESET_CHAIN)
-                                        .build());
-                            } catch(ex: Exception) {
-                                Timber.e(ex, "Analytics Exception");
-                            }
+                    try {
+                        AnalyticsMaster.getTracker(this).send(HitBuilders.EventBuilder()
+                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                                .setAction(AnalyticsMaster.ACTION_RESET_CHAIN)
+                                .build());
+                    } catch(ex: Exception) {
+                        Timber.e(ex, "Analytics Exception");
+                    }
 
 
-                        })
-                builder.setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialogInterface, i -> dialogInterface.cancel() })
+                }
+                builder.setNegativeButton(R.string.cancel) { dialogInterface, i -> dialogInterface.cancel() }
                 builder.create().show()
                 return true;
             }
@@ -245,23 +240,22 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 var builder = AlertDialog.Builder(this)
                 builder.setMessage(R.string.delete_chain_confirm)
                 builder.setCancelable(true)
-                builder.setPositiveButton(R.string.delete,
-                        DialogInterface.OnClickListener {
-                            dialogInterface, i ->
-                            ChainMaster.deleteChain(ChainMaster.selectedChainId as String)
-                            refreshChain()
+                builder.setPositiveButton(R.string.delete) {
+                    dialogInterface, i ->
+                    ChainMaster.deleteChain(ChainMaster.selectedChainId)
+                    refreshChain()
 
-                            try {
-                                AnalyticsMaster.getTracker(this)?.send(HitBuilders.EventBuilder()
-                                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                                        .setAction(AnalyticsMaster.ACTION_DELETE_CHAIN)
-                                        .build());
-                            } catch(ex: Exception) {
-                                Timber.e(ex, "Analytics Exception");
-                            }
+                    try {
+                        AnalyticsMaster.getTracker(this).send(HitBuilders.EventBuilder()
+                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                                .setAction(AnalyticsMaster.ACTION_DELETE_CHAIN)
+                                .build());
+                    } catch(ex: Exception) {
+                        Timber.e(ex, "Analytics Exception");
+                    }
 
-                        })
-                builder.setNegativeButton(R.string.cancel, DialogInterface.OnClickListener { dialogInterface, i -> dialogInterface.cancel() })
+                }
+                builder.setNegativeButton(R.string.cancel) { dialogInterface, i -> dialogInterface.cancel() }
                 builder.create().show()
                 return true;
             }
@@ -301,39 +295,35 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         sideBarRows.add(SideBarAdapter.SideBarHeading(getString(R.string.app_label), version))
         sideBarRows.add(getString(R.string.chains))
         for (chain in ChainMaster.allChains.values) {
-            sideBarRows.add(SideBarAdapter.RowChain(chain, chain.id == ChainMaster.selectedChainId, object : View.OnClickListener {
-                override fun onClick(view: View) {
-                    var intent = IntentGenerator.generateIntent(this@ChainActivity, chain.id)
-                    startActivity(intent)
-                    try {
-                        AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                                .setAction(AnalyticsMaster.ACTION_SELECT_CHAIN)
-                                .build());
-                    } catch(ex: Exception) {
-                        Timber.e(ex, "Analytics Exception");
-                    }
-                }
-            }))
-            sideBarRows.add(SideBarAdapter.Div(true))
-        }
-        sideBarRows.add(SideBarAdapter.RowCreateChain(getString(R.string.create_chain), "", object : View.OnClickListener {
-            override fun onClick(view: View) {
-                drawerLayout?.closeDrawers()
-                if (BuildConfig.IS_PRO) {
-                    var intent = ChainEditActivity.IntentGenerator.generateNewChainIntent(this@ChainActivity);
-                    startActivity(intent)
-                } else {
-                    showGoPro()
-                }
+            sideBarRows.add(SideBarAdapter.RowChain(chain, chain.id == ChainMaster.selectedChainId, View.OnClickListener {
+                var intent = IntentGenerator.generateIntent(this@ChainActivity, chain.id)
+                startActivity(intent)
                 try {
-                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
+                    AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
                             .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                            .setAction(AnalyticsMaster.ACTION_NEW_CHAIN)
+                            .setAction(AnalyticsMaster.ACTION_SELECT_CHAIN)
                             .build());
                 } catch(ex: Exception) {
                     Timber.e(ex, "Analytics Exception");
                 }
+            }))
+            sideBarRows.add(SideBarAdapter.Div(true))
+        }
+        sideBarRows.add(SideBarAdapter.RowCreateChain(getString(R.string.create_chain), "", View.OnClickListener {
+            drawerLayout?.closeDrawers()
+            if (BuildConfig.IS_PRO) {
+                var intent = ChainEditActivity.IntentGenerator.generateNewChainIntent(this@ChainActivity);
+                startActivity(intent)
+            } else {
+                showGoPro()
+            }
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_NEW_CHAIN)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
             }
         }, R.drawable.ic_action_new))
 
@@ -341,115 +331,103 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
 
         //GO PRO
         if (!BuildConfig.IS_PRO) {
-            sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.go_pro_action), getString(R.string.go_pro_create_edit_blurb, getString(R.string.app_name)), object : View.OnClickListener {
-                override fun onClick(view: View) {
-                    var intent = IntentUtils.goPro(this@ChainActivity)
-                    startActivity(intent)
-                    try {
-                        AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                                .setAction(AnalyticsMaster.ACTION_GO_PRO_SIDEBAR)
-                                .build());
-                    } catch(ex: Exception) {
-                        Timber.e(ex, "Analytics Exception");
-                    }
+            sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.go_pro_action), getString(R.string.go_pro_create_edit_blurb, getString(R.string.app_name)), View.OnClickListener {
+                var intent = IntentUtils.goPro(this@ChainActivity)
+                startActivity(intent)
+                try {
+                    AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                            .setAction(AnalyticsMaster.ACTION_GO_PRO_SIDEBAR)
+                            .build());
+                } catch(ex: Exception) {
+                    Timber.e(ex, "Analytics Exception");
                 }
             }, R.drawable.ic_action_go_pro))
             sideBarRows.add(SideBarAdapter.Div(true))
         }
         //RATE US
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.rate_us), getString(R.string.rate_us_blerb_template, getString(R.string.app_name)), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                val intent = Intent(Intent.ACTION_VIEW)
-                if (BuildConfig.IS_PRO) {
-                    intent.setData(Uri.parse("market://details?id=com.hotpodata.redchain.pro"))
-                } else {
-                    intent.setData(Uri.parse("market://details?id=com.hotpodata.redchain.free"))
-                }
-                startActivity(intent)
-                try {
-                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                            .setAction(AnalyticsMaster.ACTION_RATE_APP)
-                            .build());
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Analytics Exception");
-                }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.rate_us), getString(R.string.rate_us_blerb_template, getString(R.string.app_name)), View.OnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW)
+            if (BuildConfig.IS_PRO) {
+                intent.setData(Uri.parse("market://details?id=com.hotpodata.redchain.pro"))
+            } else {
+                intent.setData(Uri.parse("market://details?id=com.hotpodata.redchain.free"))
+            }
+            startActivity(intent)
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_RATE_APP)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
             }
         }, R.drawable.ic_action_rate))
 
         //EMAIL
         sideBarRows.add(SideBarAdapter.Div(true))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.contact_the_developer), getString(R.string.contact_email_addr_template, getString(R.string.app_name)), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                val intent = Intent(Intent.ACTION_SEND)
-                intent.setType("message/rfc822")
-                intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.contact_email_addr_template, getString(R.string.app_name))))
-                if (intent.resolveActivity(packageManager) != null) {
-                    startActivity(intent)
-                }
-                try {
-                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                            .setAction(AnalyticsMaster.ACTION_CONTACT)
-                            .build());
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Analytics Exception");
-                }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.contact_the_developer), getString(R.string.contact_email_addr_template, getString(R.string.app_name)), View.OnClickListener {
+            val intent = Intent(Intent.ACTION_SEND)
+            intent.setType("message/rfc822")
+            intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(getString(R.string.contact_email_addr_template, getString(R.string.app_name))))
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            }
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_CONTACT)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
             }
         }, R.drawable.ic_action_mail))
 
         //TWITTER
         sideBarRows.add(SideBarAdapter.Div(true))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.follow_us_on_twitter), getString(R.string.twitter_handle), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.setData(Uri.parse(getString(R.string.twitter_url)))
-                startActivity(intent)
-                try {
-                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                            .setAction(AnalyticsMaster.ACTION_TWITTER)
-                            .build());
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Analytics Exception");
-                }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.follow_us_on_twitter), getString(R.string.twitter_handle), View.OnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.setData(Uri.parse(getString(R.string.twitter_url)))
+            startActivity(intent)
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_TWITTER)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
             }
         }, R.drawable.ic_action_twitter))
 
         //GITHUB
         sideBarRows.add(SideBarAdapter.Div(true))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.fork_redchain_on_github), getString(R.string.github_url), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.setData(Uri.parse(getString(R.string.github_url)))
-                startActivity(intent)
-                try {
-                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                            .setAction(AnalyticsMaster.ACTION_TWITTER)
-                            .build());
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Analytics Exception");
-                }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.fork_redchain_on_github), getString(R.string.github_url), View.OnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.setData(Uri.parse(getString(R.string.github_url)))
+            startActivity(intent)
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_TWITTER)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
             }
         }, R.drawable.ic_action_github))
 
         //WEBSITE
         sideBarRows.add(SideBarAdapter.Div(true))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.visit_website), getString(R.string.visit_website_blurb), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.setData(Uri.parse(getString(R.string.website_url)))
-                startActivity(intent)
-                try {
-                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                            .setAction(AnalyticsMaster.ACTION_WEBSITE)
-                            .build());
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Analytics Exception");
-                }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.visit_website), getString(R.string.visit_website_blurb), View.OnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.setData(Uri.parse(getString(R.string.website_url)))
+            startActivity(intent)
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_WEBSITE)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
             }
         }, R.drawable.ic_action_web))
 
@@ -461,7 +439,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                     NotificationMaster.setShowReminder(!NotificationMaster.showReminderEnabled())
                     refreshSideBar()
                     try {
-                        AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
+                        AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
                                 .setCategory(AnalyticsMaster.CATEGORY_ACTION)
                                 .setAction(AnalyticsMaster.ACTION_TOGGLE_REMINDER_NOTIFICATION)
                                 .build());
@@ -475,7 +453,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                     NotificationMaster.setShowBroken(!NotificationMaster.showBrokenEnabled())
                     refreshSideBar()
                     try {
-                        AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
+                        AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
                                 .setCategory(AnalyticsMaster.CATEGORY_ACTION)
                                 .setAction(AnalyticsMaster.ACTION_TOGGLE_BROKEN_NOTIFICATION)
                                 .build());
@@ -486,68 +464,57 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
 
         sideBarRows.add(SideBarAdapter.Div(false))
         sideBarRows.add(getString(R.string.apps))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.filecat), getString(R.string.filecat_desc), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.setData(Uri.parse("market://details?id=com.hotpodata.filecat.free"))
-                    startActivity(intent)
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Failure to launch market intent")
-                }
-                try {
-                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                            .setAction(AnalyticsMaster.ACTION_FILECAT)
-                            .build());
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Analytics Exception");
-                }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.filecat), getString(R.string.filecat_desc), View.OnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setData(Uri.parse("market://details?id=com.hotpodata.filecat.free"))
+                startActivity(intent)
+            } catch(ex: Exception) {
+                Timber.e(ex, "Failure to launch market intent")
+            }
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_FILECAT)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
             }
         }, R.mipmap.launcher_filecat))
         sideBarRows.add(SideBarAdapter.Div(true))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.wikicat), getString(R.string.wikicat_desc), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.setData(Uri.parse("market://details?id=com.hotpodata.wikicat.free"))
-                    startActivity(intent)
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Failure to launch market intent")
-                }
-                try {
-                    AnalyticsMaster.getTracker(this@ChainActivity)?.send(HitBuilders.EventBuilder()
-                            .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                            .setAction(AnalyticsMaster.ACTION_WIKICAT)
-                            .build());
-                } catch(ex: Exception) {
-                    Timber.e(ex, "Analytics Exception");
-                }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.wikicat), getString(R.string.wikicat_desc), View.OnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setData(Uri.parse("market://details?id=com.hotpodata.wikicat.free"))
+                startActivity(intent)
+            } catch(ex: Exception) {
+                Timber.e(ex, "Failure to launch market intent")
+            }
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_WIKICAT)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
             }
         }, R.mipmap.launcher_wikicat))
 
         sideBarRows.add(SideBarAdapter.Div(false))
         sideBarRows.add(getString(R.string.acknowledgements))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.timber), getString(R.string.timber_license), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                val i = Intent(Intent.ACTION_VIEW)
-                i.setData(Uri.parse(getString(R.string.timber_url)))
-                startActivity(i)
-            }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.timber), getString(R.string.timber_license), View.OnClickListener {
+            val i = Intent(Intent.ACTION_VIEW)
+            i.setData(Uri.parse(getString(R.string.timber_url)))
+            startActivity(i)
         }))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.joda), getString(R.string.joda_license), object : View.OnClickListener {
-            override fun onClick(view: View) {
-                val i = Intent(Intent.ACTION_VIEW)
-                i.setData(Uri.parse(getString(R.string.joda_url)))
-                startActivity(i)
-            }
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.joda), getString(R.string.joda_license), View.OnClickListener {
+            val i = Intent(Intent.ACTION_VIEW)
+            i.setData(Uri.parse(getString(R.string.joda_url)))
+            startActivity(i)
         }))
 
         sideBarRows.add(SideBarAdapter.Div(false))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.legal_heading), getString(R.string.legal_blurb), object : View.OnClickListener {
-            override fun onClick(view: View) {
-            }
-        }))
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.legal_heading), getString(R.string.legal_blurb), View.OnClickListener { }))
 
 
         if (sideBarAdapter == null) {

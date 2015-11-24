@@ -16,8 +16,8 @@ class GoProChainFragment: ProFeatureFragment() {
     override fun onResume(){
         super.onResume()
         Timber.i("Setting screen name:" + AnalyticsMaster.SCREEN_PRO_FEATURES);
-        AnalyticsMaster.getTracker(getActivity())?.setScreenName(AnalyticsMaster.SCREEN_PRO_FEATURES);
-        AnalyticsMaster.getTracker(getActivity())?.send(HitBuilders.ScreenViewBuilder().build());
+        AnalyticsMaster.getTracker(activity).setScreenName(AnalyticsMaster.SCREEN_PRO_FEATURES);
+        AnalyticsMaster.getTracker(activity).send(HitBuilders.ScreenViewBuilder().build());
     }
 
     override fun getFeatureName(): String? {
@@ -33,10 +33,10 @@ class GoProChainFragment: ProFeatureFragment() {
     }
 
     override fun actionGoPro() {
-        var intent = IntentUtils.goPro(getActivity())
+        var intent = IntentUtils.goPro(activity)
         startActivity(intent)
         try {
-            AnalyticsMaster.getTracker(getActivity())?.send(HitBuilders.EventBuilder()
+            AnalyticsMaster.getTracker(activity).send(HitBuilders.EventBuilder()
                     .setCategory(AnalyticsMaster.CATEGORY_ACTION)
                     .setAction(AnalyticsMaster.ACTION_GO_PRO_FRAGMENT)
                     .build());
@@ -46,7 +46,7 @@ class GoProChainFragment: ProFeatureFragment() {
     }
 
     override fun getVideoUri(): Uri? {
-        var uri = "android.resource://" + getActivity().getPackageName() + "/" + R.raw.go_pro_create
+        var uri = "android.resource://" + activity.packageName + "/" + R.raw.go_pro_create
         return Uri.parse(uri)
     }
 }

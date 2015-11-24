@@ -4,11 +4,9 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.os.Build
 import android.util.AttributeSet
 import android.view.View
 import com.hotpodata.redchain.R
-import org.joda.time.LocalDate
 import timber.log.Timber
 
 /**
@@ -45,6 +43,7 @@ public class XView : View {
         init(context, attrs)
     }
 
+    @Suppress("DEPRECATION")
     private fun init(context: Context, attrs: AttributeSet?) {
         xColor = context.resources.getColor(R.color.primary)
         xColorSecondary = context.resources.getColor(R.color.accent)
