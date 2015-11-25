@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:background="?android:attr/selectableItemBackgroundBorderless">
 
     <com.hotpodata.redchain.view.CircleImageView
         android:id="@android:id/icon"

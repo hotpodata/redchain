@@ -1,5 +1,6 @@
 package com.hotpodata.redchain.view;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -39,6 +40,7 @@ public class CircleImageView extends ImageView {
         init(context, attrs);
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public CircleImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
