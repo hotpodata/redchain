@@ -199,6 +199,8 @@ object ChainMaster {
     val JSON_KEY_CHAINNAME = "chainname"
     val JSON_KEY_CHAINCOLOR = "chaincolor"
     val JSON_KEY_CHAINDATES = "chaindates"
+    val JSON_KEY_LONGESTRUN = "longestrun"
+    val JSON_KEY_LONGESTRUNDATE = "longestrundate"
 
     fun chainToJson(chain: Chain): JSONObject {
         var chainjson = JSONObject()
@@ -210,6 +212,8 @@ object ChainMaster {
             datesjson.put(datetime.toString())
         }
         chainjson.putOpt(JSON_KEY_CHAINDATES, datesjson)
+        chainjson.putOpt(JSON_KEY_LONGESTRUN, chain.longestRun)
+        chainjson.putOpt(JSON_KEY_LONGESTRUNDATE, chain.longestRunLastDate?.toString())
         return chainjson
 
     }
@@ -238,7 +242,12 @@ object ChainMaster {
                     }
                 }
                 if (chainId != null && chainName != null && chainColor != null && chainDates != null) {
-                    return Chain(chainId, chainName, chainColor, ArrayList<LocalDateTime>(chainDates))
+                    var chain = Chain(chainId, chainName, chainColor, ArrayList<LocalDateTime>(chainDates))
+                    chain.longestRun = chainjson.optInt(JSON_KEY_LONGESTRUN, 0)
+                    chain.longestRunLastDate = chainjson.optString(JSON_KEY_LONGESTRUNDATE)?.let {
+                        LocalDateTime.parse(it)
+                    }
+                    return chain
                 }
             }
         } catch(ex: Exception) {

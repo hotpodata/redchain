@@ -9,9 +9,9 @@ import java.util.*
  */
 public class Chain(chainId: String, name: String, chainColor: Int, links: List<LocalDateTime>) {
 
-    object Builder{
-        public fun buildFreshChain(chainTitle: String, chainColor: Int): Chain{
-            return Chain(UUID.randomUUID().toString(), chainTitle,chainColor, ArrayList<LocalDateTime>())
+    object Builder {
+        public fun buildFreshChain(chainTitle: String, chainColor: Int): Chain {
+            return Chain(UUID.randomUUID().toString(), chainTitle, chainColor, ArrayList<LocalDateTime>())
         }
     }
 
@@ -19,6 +19,15 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
     var title: String
     var dateTimes: List<LocalDateTime>
     var color: Int
+    var longestRun: Int = 0
+        get() = if (chainLength > field) {
+            field = chainLength
+            longestRunLastDate = newestDate
+            field
+        } else {
+            field
+        }
+    var longestRunLastDate: LocalDateTime? = null
 
     init {
         id = chainId
@@ -32,6 +41,8 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
 
     val oldestDate: LocalDateTime
         get() = if (dateTimes.size > 0) dateTimes.get(dateTimes.size - 1) else LocalDateTime.now()
+    val newestDate: LocalDateTime?
+        get() = if (dateTimes.size > 0) dateTimes[0] else null
 
     public fun chainLink(position: Int): LocalDateTime? {
         if (position >= 0 && position < chainLength) {
@@ -44,15 +55,15 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
         return chainDepth(LocalDateTime.now()) >= 0;
     }
 
-    public fun removeTodayFromChain(){
+    public fun removeTodayFromChain() {
         var todayDt: LocalDateTime? = null
-        for(dt in dateTimes){
-            if(dt.toLocalDate().equals(LocalDate.now())){
+        for (dt in dateTimes) {
+            if (dt.toLocalDate().equals(LocalDate.now())) {
                 todayDt = dt;
                 break;
             }
         }
-        if(todayDt != null){
+        if (todayDt != null) {
             var dates = ArrayList<LocalDateTime>(dateTimes)
             dates.remove(todayDt)
             dateTimes = sanitizeDateTimes(dates)
@@ -63,20 +74,25 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
         return chainDepth(LocalDateTime.now().minusDays(1)) >= 0;
     }
 
-    public fun clearDates(){
+    public fun clearDates() {
         dateTimes = ArrayList<LocalDateTime>()
     }
 
-    public fun chainExpired(): Boolean{
+    public fun chainExpired(): Boolean {
         return (chainLength > 1 && !chainContainsYesterday()) || (chainLength == 1 && !chainContainsYesterday() && !chainContainsToday())
     }
 
     public fun addNowToChain() {
         if (!chainContainsToday()) {
+            var now = LocalDateTime.now()
             var dts = ArrayList<LocalDateTime>(dateTimes)
-            dts.add(LocalDateTime.now())
+            dts.add(now)
             dateTimes = sanitizeDateTimes(dts)
 
+            if (chainLength > longestRun) {
+                longestRun = chainLength
+                longestRunLastDate = now
+            }
         }
     }
 
