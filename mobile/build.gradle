@@ -97,7 +97,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-analytics:8.3.0'
 }
 buildscript {
-    ext.kotlin_version = '1.0.0-beta-2423'
+    ext.kotlin_version = '1.0.0-beta-3595'
     repositories {
         mavenCentral()
     }
