@@ -24,7 +24,6 @@ import com.hotpodata.redchain.*
 import com.hotpodata.redchain.adapter.ChainAdapter
 import com.hotpodata.redchain.adapter.SideBarAdapter
 import com.hotpodata.redchain.data.Chain
-import com.hotpodata.redchain.fragment.GoProChainFragment
 import com.hotpodata.redchain.interfaces.ChainUpdateListener
 import com.hotpodata.redchain.service.FreeVersionMigrationService
 import com.hotpodata.redchain.utils.IntentUtils
@@ -171,8 +170,6 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 resetTodayItem.setEnabled(false)
             }
         }
-        menu?.setGroupEnabled(R.id.pro_feature_group, BuildConfig.IS_PRO)
-        menu?.setGroupVisible(R.id.pro_feature_group, BuildConfig.IS_PRO)
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -311,12 +308,8 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         }
         sideBarRows.add(SideBarAdapter.RowCreateChain(getString(R.string.create_chain), "", View.OnClickListener {
             drawerLayout?.closeDrawers()
-            if (BuildConfig.IS_PRO) {
-                var intent = ChainEditActivity.IntentGenerator.generateNewChainIntent(this@ChainActivity);
-                startActivity(intent)
-            } else {
-                showGoPro()
-            }
+            var intent = ChainEditActivity.IntentGenerator.generateNewChainIntent(this@ChainActivity);
+            startActivity(intent)
             try {
                 AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
                         .setCategory(AnalyticsMaster.CATEGORY_ACTION)
@@ -576,12 +569,6 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
         //We just refresh sidebar here because the chain object in the adapter is already updated
         refreshSideBar()
         supportInvalidateOptionsMenu()
-    }
-
-
-    fun showGoPro() {
-        var gopro = GoProChainFragment()
-        gopro.show(supportFragmentManager, FTAG_GO_PRO)
     }
 
 

@@ -116,13 +116,6 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                     animator.addListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator?) {
                             buildRows()
-                            //                                if(rows.size == 1){
-                            //                                    //If this is the first day, we add the blurb, so rebuild the rows
-                            //                                    buildRows()
-                            //                                }else{
-                            //                                    //Otherwise we just update our today row
-                            //                                    notifyItemChanged(0)
-                            //                                }
                         }
                     })
                     animator.interpolator = AccelerateDecelerateInterpolator()
