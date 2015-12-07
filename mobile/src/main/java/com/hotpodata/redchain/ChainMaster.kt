@@ -125,14 +125,14 @@ object ChainMaster {
         var sharedPref = getSharedPrefs()
         var chainStr = sharedPref.getString(id, "");
         Timber.d("readChain:" + id + " dat:" + chainStr)
-        var chain = chainFromJson(chainStr)
+        var chain = Chain.Serializer.chainFromJson(chainStr)
         return chain
     }
 
     private fun writeChain(chain: Chain) {
         var sharedPref = getSharedPrefs()
         var editor = sharedPref.edit();
-        var chainStr = chainToJson(chain).toString()
+        var chainStr = Chain.Serializer.chainToJson(chain).toString()
         Timber.d("writeChain" + chainStr)
         editor.putString(chain.id, chainStr);
         editor.commit();
@@ -194,78 +194,16 @@ object ChainMaster {
         return context!!.getSharedPreferences(PREFS_CORE, Context.MODE_PRIVATE);
     }
 
-
-    val JSON_KEY_CHAINID = "chainid"
-    val JSON_KEY_CHAINNAME = "chainname"
-    val JSON_KEY_CHAINCOLOR = "chaincolor"
-    val JSON_KEY_CHAINDATES = "chaindates"
-    val JSON_KEY_LONGESTRUN = "longestrun"
-    val JSON_KEY_LONGESTRUNDATE = "longestrundate"
-
-    fun chainToJson(chain: Chain): JSONObject {
-        var chainjson = JSONObject()
-        chainjson.putOpt(JSON_KEY_CHAINID, chain.id)
-        chainjson.putOpt(JSON_KEY_CHAINNAME, chain.title)
-        chainjson.put(JSON_KEY_CHAINCOLOR, chain.color)
-        var datesjson = JSONArray()
-        for (datetime in chain.dateTimes) {
-            datesjson.put(datetime.toString())
-        }
-        chainjson.putOpt(JSON_KEY_CHAINDATES, datesjson)
-        chainjson.putOpt(JSON_KEY_LONGESTRUN, chain.longestRun)
-        chainjson.putOpt(JSON_KEY_LONGESTRUNDATE, chain.longestRunLastDate?.toString())
-        return chainjson
-
-    }
-
-
-    fun chainFromJson(chainJsonStr: String): Chain? {
-        try {
-            if (!TextUtils.isEmpty(chainJsonStr)) {
-                var chainjson = JSONObject(chainJsonStr)
-                var chainId: String? = null
-                var chainName: String? = null
-                var chainColor: Int? = null
-                var chainDates: MutableSet<LocalDateTime>? = null
-                if (chainjson.has(JSON_KEY_CHAINID) && chainjson.has(JSON_KEY_CHAINNAME) && chainjson.has(JSON_KEY_CHAINCOLOR)) {
-                    chainId = chainjson.getString(JSON_KEY_CHAINID)
-                    chainName = chainjson.getString(JSON_KEY_CHAINNAME)
-                    chainColor = chainjson.getInt(JSON_KEY_CHAINCOLOR)
-                }
-                if (chainName != null && chainjson.has(JSON_KEY_CHAINDATES)) {
-                    chainDates = HashSet<LocalDateTime>()
-                    var jsonarrDates = chainjson.getJSONArray(JSON_KEY_CHAINDATES)
-                    if (jsonarrDates.length() > 0) {
-                        for (i in 0..(jsonarrDates.length() - 1)) {
-                            chainDates.add(LocalDateTime.parse(jsonarrDates.get(i).toString()))
-                        }
-                    }
-                }
-                if (chainId != null && chainName != null && chainColor != null && chainDates != null) {
-                    var chain = Chain(chainId, chainName, chainColor, ArrayList<LocalDateTime>(chainDates))
-                    chain.longestRun = chainjson.optInt(JSON_KEY_LONGESTRUN, 0)
-                    chain.longestRunLastDate = chainjson.optString(JSON_KEY_LONGESTRUNDATE)?.let {
-                        LocalDateTime.parse(it)
-                    }
-                    return chain
-                }
-            }
-        } catch(ex: Exception) {
-            Timber.e(ex, "chainFromJson Fail")
-        }
-        return null
-    }
-
     val BUNDLE_KEY_CHAIN_JSON = "BUNDLE_KEY_CHAIN_JSON"
     fun chainToBundle(chain: Chain): Bundle {
         var bundle = Bundle()
-        bundle.putString(BUNDLE_KEY_CHAIN_JSON, chainToJson(chain).toString())
+        bundle.putString(BUNDLE_KEY_CHAIN_JSON, Chain.Serializer.chainToJson(chain).toString())
         return bundle
     }
 
     fun chainFromBundle(bundle: Bundle?): Chain? {
         if (bundle != null && bundle.containsKey(BUNDLE_KEY_CHAIN_JSON)) {
-            return chainFromJson(bundle.getString(BUNDLE_KEY_CHAIN_JSON))
+            return Chain.Serializer.chainFromJson(bundle.getString(BUNDLE_KEY_CHAIN_JSON))
         }
         return null;
     }
