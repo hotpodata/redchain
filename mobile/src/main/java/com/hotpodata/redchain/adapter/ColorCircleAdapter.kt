@@ -73,9 +73,7 @@ class ColorCircleAdapter(context: Context) : RecyclerView.Adapter<RecyclerView.V
         var inflater = LayoutInflater.from(parent?.context);
 
         if (viewType == ROW_COLOR) {
-            var chainView: View? = inflater.inflate(R.layout.row_color, parent, false);
-            var vh = RowColorViewHolder(chainView);
-            return vh;
+            return RowColorViewHolder(inflater.inflate(R.layout.row_color, parent, false));
         }
 
         return null;
