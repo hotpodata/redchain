@@ -23,6 +23,8 @@
     <string name="delete">Delete</string>
     <string name="delete_chain_confirm">Are you sure you want to delete this chain forever?</string>
 
+    <string name="ad_explainer">Ads are shown when you are viewing a chain that has been broken. When the current chain exceeds the maximum length of your past broken chains, this ad will disappear. If you never want see ads, please consider purchasing RedChain Pro."</string>
+
     <string name="day_num">Day %1$d</string>
 
     <string name="error_invalid_title">You must supply a valid title</string>

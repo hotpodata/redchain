@@ -15,6 +15,9 @@ class RedChainApplication : MultiDexApplication() {
             Timber.plant(Timber.DebugTree())
         }
 
+        //Init notification master
+        NotificationMaster.init(this)
+
         //Init chain master
         ChainMaster.init(this)
 
@@ -34,7 +37,7 @@ class RedChainApplication : MultiDexApplication() {
 //            }
 //        }
 
-        NotificationMaster.init(this)
+
     }
 
 

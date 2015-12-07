@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Typeface
+import android.provider.Settings
 import android.support.v7.widget.RecyclerView
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -13,17 +14,19 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.Interpolator
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.AdView
+import com.hotpodata.redchain.BuildConfig
 import com.hotpodata.redchain.R
-import com.hotpodata.redchain.adapter.viewholder.ChainLinkVh
-import com.hotpodata.redchain.adapter.viewholder.ChainTodayVh
-import com.hotpodata.redchain.adapter.viewholder.RowFirstDayMessageVh
-import com.hotpodata.redchain.adapter.viewholder.VertLineVh
+import com.hotpodata.redchain.adapter.viewholder.*
 import com.hotpodata.redchain.data.Chain
 import com.hotpodata.redchain.interfaces.ChainUpdateListener
 import org.joda.time.Days
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
+import timber.log.Timber
+import java.security.MessageDigest
 import java.util.*
 
 /**
@@ -35,6 +38,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
     val VERTICAL_LINE = 1;
     val CHAIN_TODAY = 2;
     val CHAIN_FIRST_DAY_MESSAGE = 3;
+    val CHAIN_AD = 4
 
     val rowHeadingTypeface: Typeface
     val rowSubHeadTypeface: Typeface
@@ -172,6 +176,9 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
         if (holder is RowFirstDayMessageVh) {
             //nothing to do
         }
+        if (holder is ChainAdVh) {
+            requestAd(holder.adview)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -187,6 +194,8 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             return CHAIN_TODAY;
         } else if (rows.get(position) is RowFirstDayMessage) {
             return CHAIN_FIRST_DAY_MESSAGE
+        } else if (rows.get(position) is RowChainAd) {
+            return CHAIN_AD
         }
         return -1;
     }
@@ -212,6 +221,11 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             var messageView = inflater.inflate(R.layout.row_first_day_message, parent, false)
             var vh = RowFirstDayMessageVh(messageView)
             return vh
+        }
+        if (viewType == CHAIN_AD) {
+            var ad = inflater.inflate(R.layout.card_chain_ad, parent, false)
+            var vh = ChainAdVh(ad)
+            return vh;
         }
 
         return null;
@@ -252,18 +266,30 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
         if (freshRows.size == 1 && chain.chainContainsToday()) {
             freshRows.add(RowFirstDayMessage())
         }
+        if (!BuildConfig.IS_PRO) {
+            if (chain.chainLength < chain.longestRun) {
+                Timber.d("Adding RowChainAd()")
+                freshRows.add(1, RowChainLine(false))
+                freshRows.add(2, RowChainAd())
+            }
+        } else {
+            Timber.d("Skipping RowChainAd()")
+        }
+
 
         var oldRows = rows
         rows = freshRows
 
-        if (oldRows.size == 1 && rows.size == 2) {
-            notifyItemChanged(0)
-            notifyItemInserted(1)
-        } else if (oldRows.size > 1 && rows.size == oldRows.size) {
-            notifyItemChanged(0)
-        } else {
-            notifyDataSetChanged()
-        }
+        //        if (oldRows.size == 1 && rows.size == 2) {
+        //            notifyItemChanged(0)
+        //            notifyItemInserted(1)
+        //        } else if (oldRows.size > 1 && rows.size == oldRows.size) {
+        //            notifyItemChanged(0)
+        //        } else {
+        //            notifyDataSetChanged()
+        //        }
+        //TODO: We can do better
+        notifyDataSetChanged()
     }
 
     open class Row() {
@@ -284,5 +310,50 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
 
     class RowFirstDayMessage() : Row() {
 
+    }
+
+    class RowChainAd() : Row() {
+
+    }
+
+
+    /*
+   ADD STUFF
+    */
+
+    private fun requestAd(adview: AdView?) {
+        if (!BuildConfig.IS_PRO) {
+            var adRequest = with(AdRequest.Builder()) {
+                if (BuildConfig.IS_DEBUG_BUILD) {
+                    addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                    var andId = Settings.Secure.getString(ctx.contentResolver, Settings.Secure.ANDROID_ID)
+                    var hash = md5(andId).toUpperCase()
+                    Timber.d("Adding test device. hash:" + hash)
+                    addTestDevice(hash)
+                }
+                build()
+            }
+            adview?.loadAd(adRequest);
+        }
+    }
+
+    private fun md5(s: String): String {
+        try {
+            var digest = MessageDigest.getInstance("MD5")
+            digest.update(s.toByteArray())
+            var messageDigest = digest.digest()
+
+            var hexString = StringBuffer()
+            for (i in messageDigest.indices) {
+                var h = Integer.toHexString(0xFF and messageDigest[i].toInt())
+                while (h.length < 2)
+                    h = "0" + h
+                hexString.append(h)
+            }
+            return hexString.toString()
+        } catch(ex: Exception) {
+            Timber.e(ex, "Fail in md5");
+        }
+        return ""
     }
 }
