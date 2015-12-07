@@ -28,6 +28,7 @@ object AnalyticsMaster {
     val ACTION_RATE_APP = "Rate_App"
     val ACTION_FILECAT = "FileCat"
     val ACTION_WIKICAT = "WikiCat"
+    val ACTION_BACONMASHER = "BaconMasher"
     val ACTION_CONTACT = "Contact"
     val ACTION_WEBSITE = "Website"
     val ACTION_TWITTER = "Twitter"

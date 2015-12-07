@@ -43,6 +43,8 @@
     <string name="filecat_desc">Browse files in a colorful way!</string>
     <string name="wikicat">WikiCat</string>
     <string name="wikicat_desc">Browse Wiki Encyclopedia in a colorful way!</string>
+    <string name="baconmasher">BaconMasher</string>
+    <string name="baconmasher_desc">One part reddit images, one part reddit comments, mash mash mash!</string>
 
     <string name="actions">Actions</string>
     <string name="reset_today">Reset Today Only</string>

@@ -164,7 +164,6 @@ class SideBarAdapter(ctx: Context, rows: List<Any>) : RecyclerView.Adapter<Recyc
                 } else {
                     vh.mTextTwo.visibility = View.GONE
                 }
-
             }
         }
     }

@@ -464,6 +464,24 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
 
         sideBarRows.add(SideBarAdapter.Div(false))
         sideBarRows.add(getString(R.string.apps))
+        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.baconmasher), getString(R.string.baconmasher_desc), View.OnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.setData(Uri.parse("market://details?id=com.hotpodata.baconmasher.free"))
+                startActivity(intent)
+            } catch(ex: Exception) {
+                Timber.e(ex, "Failure to launch market intent")
+            }
+            try {
+                AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
+                        .setCategory(AnalyticsMaster.CATEGORY_ACTION)
+                        .setAction(AnalyticsMaster.ACTION_BACONMASHER)
+                        .build());
+            } catch(ex: Exception) {
+                Timber.e(ex, "Analytics Exception");
+            }
+        }, R.mipmap.launcher_baconmasher))
+        sideBarRows.add(SideBarAdapter.Div(true))
         sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.filecat), getString(R.string.filecat_desc), View.OnClickListener {
             try {
                 val intent = Intent(Intent.ACTION_VIEW)
