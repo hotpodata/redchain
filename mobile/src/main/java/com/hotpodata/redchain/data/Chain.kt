@@ -1,6 +1,8 @@
 package com.hotpodata.redchain.data
 
+import android.os.Bundle
 import android.text.TextUtils
+import com.hotpodata.redchain.ChainMaster
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
 import org.json.JSONArray
@@ -19,7 +21,7 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
         }
     }
 
-    object Serializer{
+    object Serializer {
         val JSON_KEY_CHAINID = "chainid"
         val JSON_KEY_CHAINNAME = "chainname"
         val JSON_KEY_CHAINCOLOR = "chaincolor"
@@ -78,6 +80,19 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
                 Timber.e(ex, "chainFromJson Fail")
             }
             return null
+        }
+
+        val BUNDLE_KEY_CHAIN_JSON = "BUNDLE_KEY_CHAIN_JSON"
+
+        fun chainToBundle(chain: Chain, bundle: Bundle = Bundle()): Bundle {
+            bundle.putString(BUNDLE_KEY_CHAIN_JSON, Chain.Serializer.chainToJson(chain).toString())
+            return bundle
+        }
+
+        fun chainFromBundle(bundle: Bundle?): Chain? {
+            return bundle?.getString(BUNDLE_KEY_CHAIN_JSON)?.let{
+                Chain.Serializer.chainFromJson(it)
+            }
         }
     }
 

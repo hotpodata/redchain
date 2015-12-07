@@ -7,6 +7,7 @@ import android.os.IBinder
 import android.os.Message
 import android.os.Messenger
 import com.hotpodata.redchain.ChainMaster
+import com.hotpodata.redchain.data.Chain
 import timber.log.Timber
 
 /**
@@ -35,7 +36,7 @@ class FreeVersionMigrationService : Service() {
             if (msg.what == Constants.MSG_REQUEST_FREE_VERSION_DATA) {
                 if (msg.replyTo != null) {
                     var response = Message.obtain(null, Constants.MSG_FREE_VERSION_DATA)
-                    var data = ChainMaster.chainToBundle(ChainMaster.getSelectedChain())
+                    var data = Chain.Serializer.chainToBundle(ChainMaster.getSelectedChain())
                     response.data = data
                     Timber.d("handleMessage - responding")
                     msg.replyTo.send(response)

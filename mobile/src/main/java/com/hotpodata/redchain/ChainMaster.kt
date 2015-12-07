@@ -3,11 +3,9 @@ package com.hotpodata.redchain
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.text.TextUtils
 import com.hotpodata.redchain.data.Chain
 import org.joda.time.LocalDateTime
 import org.json.JSONArray
-import org.json.JSONObject
 import timber.log.Timber
 import java.util.*
 
@@ -27,7 +25,6 @@ object ChainMaster {
     val PREF_ACTIVE_CHAIN_ID = "active_chain_id"
     val PREF_ALL_CHAINS = "chainids"
     val DEFAULT_CHAIN_ID = "DEFAULT_CHAIN_ID"
-
 
     var context: Context? = null
     var selectedChainId: String = DEFAULT_CHAIN_ID
@@ -194,19 +191,7 @@ object ChainMaster {
         return context!!.getSharedPreferences(PREFS_CORE, Context.MODE_PRIVATE);
     }
 
-    val BUNDLE_KEY_CHAIN_JSON = "BUNDLE_KEY_CHAIN_JSON"
-    fun chainToBundle(chain: Chain): Bundle {
-        var bundle = Bundle()
-        bundle.putString(BUNDLE_KEY_CHAIN_JSON, Chain.Serializer.chainToJson(chain).toString())
-        return bundle
-    }
 
-    fun chainFromBundle(bundle: Bundle?): Chain? {
-        if (bundle != null && bundle.containsKey(BUNDLE_KEY_CHAIN_JSON)) {
-            return Chain.Serializer.chainFromJson(bundle.getString(BUNDLE_KEY_CHAIN_JSON))
-        }
-        return null;
-    }
 
 
 }

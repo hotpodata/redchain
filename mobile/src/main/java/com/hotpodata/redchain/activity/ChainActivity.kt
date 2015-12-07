@@ -604,7 +604,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 if (msg.what == FreeVersionMigrationService.Constants.MSG_FREE_VERSION_DATA) {
                     if (msg.data != null) {
                         Timber.d("Message contains a data bundle.")
-                        var importedChain = ChainMaster.chainFromBundle(msg.data)
+                        var importedChain = Chain.Serializer.chainFromBundle(msg.data)
                         if (importedChain != null) {
                             Timber.d("Data bundle parsed. Imported chain aquired.")
                             //Get the current default chain
