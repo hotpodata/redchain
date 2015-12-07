@@ -158,12 +158,8 @@ class SideBarAdapter(ctx: Context, rows: List<Any>) : RecyclerView.Adapter<Recyc
                 } else {
                     vh.mIcon.setImageDrawable(null)
                 }
-                if (data.chain.chainLength > 0) {
-                    vh.mTextTwo.text = mContext.resources.getString(R.string.day_num, data.chain.chainLength)
-                    vh.mTextTwo.visibility = View.VISIBLE
-                } else {
-                    vh.mTextTwo.visibility = View.GONE
-                }
+                vh.mTextTwo.text = mContext.resources.getString(R.string.day_num, if (data.chain.chainContainsToday()) data.chain.chainLength else data.chain.chainLength + 1)
+                vh.mTextTwo.visibility = View.VISIBLE
             }
         }
     }
