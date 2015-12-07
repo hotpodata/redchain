@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.*
 import android.support.design.widget.AppBarLayout
@@ -20,7 +22,10 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import com.google.android.gms.analytics.HitBuilders
-import com.hotpodata.redchain.*
+import com.hotpodata.redchain.AnalyticsMaster
+import com.hotpodata.redchain.BuildConfig
+import com.hotpodata.redchain.ChainMaster
+import com.hotpodata.redchain.R
 import com.hotpodata.redchain.adapter.ChainAdapter
 import com.hotpodata.redchain.adapter.SideBarAdapter
 import com.hotpodata.redchain.data.Chain
@@ -169,6 +174,12 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
                 resetTodayItem.setVisible(false)
                 resetTodayItem.setEnabled(false)
             }
+        }
+        var settingsItem = menu?.findItem(R.id.edit_chain)
+        if (settingsItem != null) {
+            var drawable = settingsItem.icon.mutate()
+            drawable.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP)
+            settingsItem.setIcon(drawable)
         }
         return super.onPrepareOptionsMenu(menu)
     }
@@ -320,6 +331,7 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
             }
         }, R.drawable.ic_action_new))
 
+        sideBarRows.add(SideBarAdapter.Div(false))
         sideBarRows.add(getString(R.string.actions))
 
         //GO PRO
@@ -424,37 +436,6 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
             }
         }, R.drawable.ic_action_web))
 
-
-        sideBarRows.add(SideBarAdapter.Div(false))
-        sideBarRows.add(getString(R.string.notifications_heading))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.daily_reminder), if (NotificationMaster.showReminderEnabled()) getString(R.string.enabled) else getString(R.string.disabled),
-                View.OnClickListener { view ->
-                    NotificationMaster.setShowReminder(!NotificationMaster.showReminderEnabled())
-                    refreshSideBar()
-                    try {
-                        AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
-                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                                .setAction(AnalyticsMaster.ACTION_TOGGLE_REMINDER_NOTIFICATION)
-                                .build());
-                    } catch(ex: Exception) {
-                        Timber.e(ex, "Analytics Exception");
-                    }
-                }, R.drawable.ic_action_reminder))
-        sideBarRows.add(SideBarAdapter.Div(true))
-        sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.broken_chain), if (NotificationMaster.showBrokenEnabled()) getString(R.string.enabled) else getString(R.string.disabled),
-                View.OnClickListener { view ->
-                    NotificationMaster.setShowBroken(!NotificationMaster.showBrokenEnabled())
-                    refreshSideBar()
-                    try {
-                        AnalyticsMaster.getTracker(this@ChainActivity).send(HitBuilders.EventBuilder()
-                                .setCategory(AnalyticsMaster.CATEGORY_ACTION)
-                                .setAction(AnalyticsMaster.ACTION_TOGGLE_BROKEN_NOTIFICATION)
-                                .build());
-                    } catch(ex: Exception) {
-                        Timber.e(ex, "Analytics Exception");
-                    }
-                }, R.drawable.ic_action_broken))
-
         sideBarRows.add(SideBarAdapter.Div(false))
         sideBarRows.add(getString(R.string.apps))
         sideBarRows.add(SideBarAdapter.SettingsRow(getString(R.string.baconmasher), getString(R.string.baconmasher_desc), View.OnClickListener {
@@ -554,17 +535,6 @@ public class ChainActivity : ChainUpdateListener, ChameleonActivity() {
     override fun onChainUpdated(chain: Chain) {
         ChainMaster.saveChain(chain)
 
-        //TODO: DO THIS SOMEPLAE SMARTER
-        if (chain.chainLength == 0) {
-            NotificationMaster.dismissBrokenNotification(chain.id)
-            NotificationMaster.dismissReminderNotification(chain.id)
-        }
-        if (chain.chainContainsToday()) {
-            NotificationMaster.dismissBrokenNotification(chain.id)
-            NotificationMaster.dismissReminderNotification(chain.id)
-            NotificationMaster.scheduleReminderNotification(chain.id)
-            NotificationMaster.scheduleBrokenNotification(chain.id)
-        }
 
         //We just refresh sidebar here because the chain object in the adapter is already updated
         refreshSideBar()

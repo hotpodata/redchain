@@ -116,6 +116,23 @@ object ChainMaster {
             writeChainIds(allChains.keys)
         }
         writeChain(chain)
+
+        //This still seems like a weird spot, but it should do the trick
+        scheduleChainNotifications(chain)
+    }
+
+    private fun scheduleChainNotifications(chain: Chain){
+        if (chain.chainLength == 0) {
+            NotificationMaster.dismissBrokenNotification(chain.id)
+            NotificationMaster.dismissReminderNotification(chain.id)
+        }
+        if (chain.chainContainsToday()) {
+            NotificationMaster.dismissReminderNotification(chain.id)
+            NotificationMaster.scheduleReminderNotification(chain)
+
+            NotificationMaster.dismissBrokenNotification(chain.id)
+            NotificationMaster.scheduleBrokenNotification(chain)
+        }
     }
 
     private fun readChain(id: String): Chain? {

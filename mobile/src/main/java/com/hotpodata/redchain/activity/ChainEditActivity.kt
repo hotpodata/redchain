@@ -1,18 +1,19 @@
 package com.hotpodata.redchain.activity
 
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.FloatingActionButton
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.Toolbar
+import android.support.v7.widget.*
 import android.text.TextUtils
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
+import android.widget.RadioGroup
+import android.widget.TimePicker
 import com.google.android.gms.analytics.HitBuilders
 import com.hotpodata.redchain.AnalyticsMaster
 import com.hotpodata.redchain.ChainMaster
@@ -20,6 +21,7 @@ import com.hotpodata.redchain.R
 import com.hotpodata.redchain.adapter.ColorCircleAdapter
 import com.hotpodata.redchain.data.Chain
 import com.hotpodata.redchain.interfaces.ColorSelectedListener
+import org.joda.time.LocalTime
 import timber.log.Timber
 
 /**
@@ -28,14 +30,27 @@ import timber.log.Timber
 public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
     val STATE_TITLE = "STATE_TITLE"
     val STATE_COLOR = "STATE_COLOR"
+    val STATE_REMINDER_TIME = "STATE_REMINDER_TIME"
+    val STATE_BROKEN_TIME = "STATE_BROKEN_TIME"
 
     var appBarLayout: AppBarLayout? = null
     var toolBar: Toolbar? = null
     var fab: FloatingActionButton? = null
     var titleEt: EditText? = null
     var chainColorRecyclerView: RecyclerView? = null
+    var notifReminderEnabledCb: AppCompatCheckBox? = null
+    var notifBrokenEnabledCb: AppCompatCheckBox? = null
+    var notifReminderRadioGrp: RadioGroup? = null
+    var notifBrokenRadioGrp: RadioGroup? = null
+    var notifReminderTimeRadio: AppCompatRadioButton? = null
+    var notifBrokenTimeRadio: AppCompatRadioButton? = null
 
     var colorAdapter: ColorCircleAdapter? = null
+
+    var reminderTime: LocalTime = LocalTime.MIDNIGHT.plusHours(9)
+    var brokenTime: LocalTime = LocalTime.MIDNIGHT.plusHours(9)
+
+    var timeFormat = "hh:mmaa"
 
     object IntentGenerator {
         val ARG_SELECTED_CHAIN_ID = "SELECTED_CHAIN_ID"
@@ -59,6 +74,12 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
         fab = findViewById(R.id.fab) as FloatingActionButton
         titleEt = findViewById(R.id.chain_title_edittext) as EditText
         chainColorRecyclerView = findViewById(R.id.chain_color_recyclerview) as RecyclerView
+        notifReminderEnabledCb = findViewById(R.id.notif_daily_reminder_enabled_checkbox) as AppCompatCheckBox
+        notifBrokenEnabledCb = findViewById(R.id.notif_broken_chain_enabled_checkbox) as AppCompatCheckBox
+        notifReminderRadioGrp = findViewById(R.id.radiogroup_notif_reminder) as RadioGroup
+        notifBrokenRadioGrp = findViewById(R.id.radiogroup_notif_broken) as RadioGroup
+        notifReminderTimeRadio = findViewById(R.id.radio_reminder_custom_time) as AppCompatRadioButton
+        notifBrokenTimeRadio = findViewById(R.id.radio_broken_custom_time) as AppCompatRadioButton
 
         colorAdapter = ColorCircleAdapter(this)
         colorAdapter?.colorSelectionLisetner = this
@@ -69,16 +90,76 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
         supportActionBar.setDisplayHomeAsUpEnabled(true)
         supportActionBar.setHomeButtonEnabled(true)
 
+        notifReminderEnabledCb?.setOnCheckedChangeListener { compoundButton, b ->
+            notifReminderRadioGrp?.visibility = if (b) View.VISIBLE else View.GONE
+        }
+
+        notifBrokenEnabledCb?.setOnCheckedChangeListener { compoundButton, b ->
+            notifBrokenRadioGrp?.visibility = if (b) View.VISIBLE else View.GONE
+        }
+
         if (savedInstanceState != null) {
             titleEt?.setText(savedInstanceState.getString(STATE_TITLE, ""))
             colorAdapter?.selectedColor = savedInstanceState.getInt(STATE_COLOR, Color.RED)
+            savedInstanceState.getString(STATE_REMINDER_TIME)?.let {
+                reminderTime = LocalTime.parse(it)
+            }
+            savedInstanceState.getString(STATE_BROKEN_TIME)?.let {
+                brokenTime = LocalTime.parse(it)
+            }
         } else {
-            var chain = getChainFromIntent()
-            if (chain != null) {
-                titleEt?.setText(chain.title)
-                colorAdapter?.selectedColor = chain.color
+            getChainFromIntent()?.let {
+                titleEt?.setText(it.title)
+                colorAdapter?.selectedColor = it.color
+
+                //Bind notification settings
+                it.notifReminderSettings?.let {
+                    notifReminderEnabledCb?.isChecked = it.enabled
+                    it.customTime?.let { reminderTime = it }
+                    notifReminderRadioGrp?.check(if (it.tracksLastActionTime) R.id.radio_reminder_complete_time else R.id.radio_reminder_custom_time)
+                }
+
+                it.notifBrokenSettings?.let {
+                    notifBrokenEnabledCb?.isChecked = it.enabled
+                    it.customTime?.let { brokenTime = it }
+                    notifBrokenRadioGrp?.check(if (it.tracksLastActionTime) R.id.radio_broken_complete_time else R.id.radio_broken_custom_time)
+                }
             }
         }
+
+        notifReminderRadioGrp?.setOnCheckedChangeListener { radioGroup, i ->
+            when (i) {
+                R.id.radio_reminder_custom_time -> {
+                    var dialog = TimePickerDialog(this, R.style.AppTheme,
+                            {
+                                timePicker: TimePicker?, i: Int, i1: Int ->
+                                reminderTime = LocalTime(i, i1)
+                                bindNotificationTimes()
+                            }
+                            , reminderTime.hourOfDay, reminderTime.minuteOfHour, false)
+                            .show()
+                }else -> {
+            }
+            }
+        }
+
+        notifBrokenRadioGrp?.setOnCheckedChangeListener { radioGroup, i ->
+            when (i) {
+                R.id.radio_broken_custom_time -> {
+                    var dialog = TimePickerDialog(this, R.style.AppTheme,
+                            {
+                                timePicker: TimePicker?, i: Int, i1: Int ->
+                                brokenTime = LocalTime(i, i1)
+                                bindNotificationTimes()
+                            }
+                            , brokenTime.hourOfDay, brokenTime.minuteOfHour, false)
+                            .show()
+                }else -> {
+            }
+            }
+        }
+
+
 
         fab?.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
@@ -90,6 +171,9 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
                         chain.title = getTitleFromEditText()
                         chain.color = getColorFromPicker()
                     }
+                    chain.notifReminderSettings = getNotifSettingsForReminder()
+                    chain.notifBrokenSettings = getNotifSettingsForBroken()
+
                     ChainMaster.saveChain(chain)
 
                     try {
@@ -104,8 +188,6 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
                     var chainActivityIntent = ChainActivity.IntentGenerator.generateIntent(this@ChainEditActivity, chain.id)
                     startActivity(chainActivityIntent)
                     finish()
-
-
                 }
             }
         })
@@ -116,6 +198,8 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
         } else {
             actionbar?.title = resources.getString(R.string.edit_chain)
         }
+
+
     }
 
     override fun onResume() {
@@ -126,12 +210,20 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
         AnalyticsMaster.getTracker(this).send(HitBuilders.ScreenViewBuilder().build());
 
         setColor(getColorFromPicker(), false)
+        bindNotificationTimes()
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
         outState?.putString(STATE_TITLE, getTitleFromEditText())
         outState?.putInt(STATE_COLOR, getColorFromPicker())
+        outState?.putString(STATE_REMINDER_TIME, reminderTime.toString())
+        outState?.putString(STATE_BROKEN_TIME, brokenTime.toString())
+    }
+
+    fun bindNotificationTimes() {
+        notifReminderTimeRadio?.text = getString(R.string.notif_radio_custom_time_template, reminderTime.toString(timeFormat))
+        notifBrokenTimeRadio?.text = getString(R.string.notif_radio_custom_time_template, brokenTime.toString(timeFormat))
     }
 
     fun getTitleFromEditText(): String {
@@ -146,6 +238,14 @@ public class ChainEditActivity : ColorSelectedListener, ChameleonActivity() {
             return colorAdapter!!.selectedColor
         }
         return Color.RED
+    }
+
+    fun getNotifSettingsForReminder(): Chain.NotificationSettings {
+        return Chain.NotificationSettings(notifReminderEnabledCb?.isChecked ?: false, notifReminderRadioGrp?.checkedRadioButtonId == R.id.radio_reminder_complete_time, reminderTime)
+    }
+
+    fun getNotifSettingsForBroken(): Chain.NotificationSettings {
+        return Chain.NotificationSettings(notifBrokenEnabledCb?.isChecked ?: false, notifBrokenRadioGrp?.checkedRadioButtonId == R.id.radio_broken_complete_time, brokenTime)
     }
 
     fun getChainFromIntent(): Chain? {

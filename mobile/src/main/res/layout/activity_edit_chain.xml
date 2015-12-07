@@ -16,7 +16,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:focusableInTouchMode="true"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/keyline_one">
 
 
             <android.support.design.widget.TextInputLayout
@@ -39,12 +40,94 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/chain_color_recyclerview"
                 android:layout_width="match_parent"
-                android:layout_height="256dp"
+                android:layout_height="240dp"
                 android:layout_marginLeft="@dimen/keyline_one"
                 android:layout_marginRight="@dimen/keyline_one"
                 android:choiceMode="singleChoice"
                 android:divider="@android:color/transparent"
-                android:dividerHeight="0dp" />
+                android:dividerHeight="0dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="@dimen/keyline_one"
+                android:background="@color/divider" />
+
+            <TextView
+                android:id="@+id/notifications_heading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/keyline_one"
+                android:gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/notifications_heading"
+                android:textAllCaps="true"
+                android:textSize="12dp"
+                android:textStyle="bold" />
+
+            <android.support.v7.widget.AppCompatCheckBox
+                android:id="@+id/notif_daily_reminder_enabled_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/keyline_one"
+                android:layout_marginTop="8dp"
+                android:checked="true"
+                android:text="@string/daily_reminder" />
+
+            <RadioGroup
+                android:id="@+id/radiogroup_notif_reminder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/keyline_one"
+                android:layout_marginBottom="8dp"
+                android:checkedButton="@+id/radio_reminder_complete_time"
+                android:orientation="vertical">
+
+                <android.support.v7.widget.AppCompatRadioButton
+                    android:id="@+id/radio_reminder_complete_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/notif_radio_completion_time" />
+
+                <android.support.v7.widget.AppCompatRadioButton
+                    android:id="@+id/radio_reminder_custom_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/notif_radio_custom_time_template" />
+            </RadioGroup>
+
+            <android.support.v7.widget.AppCompatCheckBox
+                android:id="@+id/notif_broken_chain_enabled_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/keyline_one"
+                android:layout_marginTop="@dimen/keyline_one"
+                android:checked="true"
+                android:text="@string/broken_chain" />
+
+            <RadioGroup
+                android:id="@+id/radiogroup_notif_broken"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/keyline_one"
+                android:layout_marginBottom="@dimen/keyline_one"
+                android:checkedButton="@+id/radio_broken_complete_time"
+                android:orientation="vertical">
+
+                <android.support.v7.widget.AppCompatRadioButton
+                    android:id="@+id/radio_broken_complete_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/notif_radio_completion_time_broken" />
+
+                <android.support.v7.widget.AppCompatRadioButton
+                    android:id="@+id/radio_broken_custom_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/notif_radio_custom_time_template" />
+            </RadioGroup>
+
 
         </LinearLayout>
     </ScrollView>

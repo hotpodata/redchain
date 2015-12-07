@@ -2,9 +2,9 @@ package com.hotpodata.redchain.data
 
 import android.os.Bundle
 import android.text.TextUtils
-import com.hotpodata.redchain.ChainMaster
 import org.joda.time.LocalDate
 import org.joda.time.LocalDateTime
+import org.joda.time.LocalTime
 import org.json.JSONArray
 import org.json.JSONObject
 import timber.log.Timber
@@ -21,80 +21,6 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
         }
     }
 
-    object Serializer {
-        val JSON_KEY_CHAINID = "chainid"
-        val JSON_KEY_CHAINNAME = "chainname"
-        val JSON_KEY_CHAINCOLOR = "chaincolor"
-        val JSON_KEY_CHAINDATES = "chaindates"
-        val JSON_KEY_LONGESTRUN = "longestrun"
-        val JSON_KEY_LONGESTRUNDATE = "longestrundate"
-
-        fun chainToJson(chain: Chain): JSONObject {
-            var chainjson = JSONObject()
-            chainjson.putOpt(JSON_KEY_CHAINID, chain.id)
-            chainjson.putOpt(JSON_KEY_CHAINNAME, chain.title)
-            chainjson.put(JSON_KEY_CHAINCOLOR, chain.color)
-            var datesjson = JSONArray()
-            for (datetime in chain.dateTimes) {
-                datesjson.put(datetime.toString())
-            }
-            chainjson.putOpt(JSON_KEY_CHAINDATES, datesjson)
-            chainjson.putOpt(JSON_KEY_LONGESTRUN, chain.longestRun)
-            chainjson.putOpt(JSON_KEY_LONGESTRUNDATE, chain.longestRunLastDate?.toString())
-            return chainjson
-
-        }
-
-        fun chainFromJson(chainJsonStr: String): Chain? {
-            try {
-                if (!TextUtils.isEmpty(chainJsonStr)) {
-                    var chainjson = JSONObject(chainJsonStr)
-                    var chainId: String? = null
-                    var chainName: String? = null
-                    var chainColor: Int? = null
-                    var chainDates: MutableSet<LocalDateTime>? = null
-                    if (chainjson.has(JSON_KEY_CHAINID) && chainjson.has(JSON_KEY_CHAINNAME) && chainjson.has(JSON_KEY_CHAINCOLOR)) {
-                        chainId = chainjson.getString(JSON_KEY_CHAINID)
-                        chainName = chainjson.getString(JSON_KEY_CHAINNAME)
-                        chainColor = chainjson.getInt(JSON_KEY_CHAINCOLOR)
-                    }
-                    if (chainName != null && chainjson.has(JSON_KEY_CHAINDATES)) {
-                        chainDates = HashSet<LocalDateTime>()
-                        var jsonarrDates = chainjson.getJSONArray(JSON_KEY_CHAINDATES)
-                        if (jsonarrDates.length() > 0) {
-                            for (i in 0..(jsonarrDates.length() - 1)) {
-                                chainDates.add(LocalDateTime.parse(jsonarrDates.get(i).toString()))
-                            }
-                        }
-                    }
-                    if (chainId != null && chainName != null && chainColor != null && chainDates != null) {
-                        var chain = Chain(chainId, chainName, chainColor, ArrayList<LocalDateTime>(chainDates))
-                        chain.longestRun = chainjson.optInt(JSON_KEY_LONGESTRUN, 0)
-                        chain.longestRunLastDate = chainjson.optString(JSON_KEY_LONGESTRUNDATE)?.let {
-                            LocalDateTime.parse(it)
-                        }
-                        return chain
-                    }
-                }
-            } catch(ex: Exception) {
-                Timber.e(ex, "chainFromJson Fail")
-            }
-            return null
-        }
-
-        val BUNDLE_KEY_CHAIN_JSON = "BUNDLE_KEY_CHAIN_JSON"
-
-        fun chainToBundle(chain: Chain, bundle: Bundle = Bundle()): Bundle {
-            bundle.putString(BUNDLE_KEY_CHAIN_JSON, Chain.Serializer.chainToJson(chain).toString())
-            return bundle
-        }
-
-        fun chainFromBundle(bundle: Bundle?): Chain? {
-            return bundle?.getString(BUNDLE_KEY_CHAIN_JSON)?.let{
-                Chain.Serializer.chainFromJson(it)
-            }
-        }
-    }
 
     var id: String
     var title: String
@@ -109,12 +35,16 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
             field
         }
     var longestRunLastDate: LocalDateTime? = null
+    var notifReminderSettings: NotificationSettings? = null
+    var notifBrokenSettings: NotificationSettings? = null
 
     init {
         id = chainId
         title = name
         dateTimes = sanitizeDateTimes(links)
         color = chainColor
+        notifReminderSettings = NotificationSettings(true, true)
+        notifBrokenSettings = NotificationSettings(true, true)
     }
 
     val chainLength: Int
@@ -201,5 +131,117 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
         return dtList
     }
 
+
+    object Serializer {
+        val JSON_KEY_CHAINID = "chainid"
+        val JSON_KEY_CHAINNAME = "chainname"
+        val JSON_KEY_CHAINCOLOR = "chaincolor"
+        val JSON_KEY_CHAINDATES = "chaindates"
+        val JSON_KEY_LONGESTRUN = "longestrun"
+        val JSON_KEY_LONGESTRUNDATE = "longestrundate"
+        val JSON_KEY_NOTIF_REMINDER_SETTINGS = "reminderSettings"
+        val JSON_KEY_NOTIF_BROKEN_SETTINGS = "brokenSettings"
+
+        fun chainToJson(chain: Chain): JSONObject {
+            var chainjson = JSONObject()
+            chainjson.putOpt(JSON_KEY_CHAINID, chain.id)
+            chainjson.putOpt(JSON_KEY_CHAINNAME, chain.title)
+            chainjson.put(JSON_KEY_CHAINCOLOR, chain.color)
+            var datesjson = JSONArray()
+            for (datetime in chain.dateTimes) {
+                datesjson.put(datetime.toString())
+            }
+            chainjson.putOpt(JSON_KEY_CHAINDATES, datesjson)
+            chainjson.putOpt(JSON_KEY_LONGESTRUN, chain.longestRun)
+            chainjson.putOpt(JSON_KEY_LONGESTRUNDATE, chain.longestRunLastDate?.toString())
+            chainjson.putOpt(JSON_KEY_NOTIF_REMINDER_SETTINGS, chain.notifReminderSettings?.let { NotificationSettings.Serializer.toJson(it) })
+            chainjson.putOpt(JSON_KEY_NOTIF_BROKEN_SETTINGS, chain.notifBrokenSettings?.let { NotificationSettings.Serializer.toJson(it) })
+            return chainjson
+
+        }
+
+        fun chainFromJson(chainJsonStr: String): Chain? {
+            try {
+                if (!TextUtils.isEmpty(chainJsonStr)) {
+                    var chainjson = JSONObject(chainJsonStr)
+                    var chainId: String? = null
+                    var chainName: String? = null
+                    var chainColor: Int? = null
+                    var chainDates: MutableSet<LocalDateTime>? = null
+                    if (chainjson.has(JSON_KEY_CHAINID) && chainjson.has(JSON_KEY_CHAINNAME) && chainjson.has(JSON_KEY_CHAINCOLOR)) {
+                        chainId = chainjson.getString(JSON_KEY_CHAINID)
+                        chainName = chainjson.getString(JSON_KEY_CHAINNAME)
+                        chainColor = chainjson.getInt(JSON_KEY_CHAINCOLOR)
+                    }
+                    if (chainName != null && chainjson.has(JSON_KEY_CHAINDATES)) {
+                        chainDates = HashSet<LocalDateTime>()
+                        var jsonarrDates = chainjson.getJSONArray(JSON_KEY_CHAINDATES)
+                        if (jsonarrDates.length() > 0) {
+                            for (i in 0..(jsonarrDates.length() - 1)) {
+                                chainDates.add(LocalDateTime.parse(jsonarrDates.get(i).toString()))
+                            }
+                        }
+                    }
+                    if (chainId != null && chainName != null && chainColor != null && chainDates != null) {
+                        var chain = Chain(chainId, chainName, chainColor, ArrayList<LocalDateTime>(chainDates))
+                        chain.longestRun = chainjson.optInt(JSON_KEY_LONGESTRUN, 0)
+                        chain.longestRunLastDate = chainjson.optString(JSON_KEY_LONGESTRUNDATE)?.let {
+                            LocalDateTime.parse(it)
+                        }
+                        chainjson.optJSONObject(JSON_KEY_NOTIF_REMINDER_SETTINGS)?.let {
+                            chain.notifReminderSettings = NotificationSettings.Serializer.fromJson(it)
+                        }
+                        chainjson.optJSONObject(JSON_KEY_NOTIF_BROKEN_SETTINGS)?.let {
+                            chain.notifBrokenSettings = NotificationSettings.Serializer.fromJson(it)
+                        }
+                        return chain
+                    }
+                }
+            } catch(ex: Exception) {
+                Timber.e(ex, "chainFromJson Fail")
+            }
+            return null
+        }
+
+        val BUNDLE_KEY_CHAIN_JSON = "BUNDLE_KEY_CHAIN_JSON"
+
+        fun chainToBundle(chain: Chain, bundle: Bundle = Bundle()): Bundle {
+            bundle.putString(BUNDLE_KEY_CHAIN_JSON, Chain.Serializer.chainToJson(chain).toString())
+            return bundle
+        }
+
+        fun chainFromBundle(bundle: Bundle?): Chain? {
+            return bundle?.getString(BUNDLE_KEY_CHAIN_JSON)?.let {
+                Chain.Serializer.chainFromJson(it)
+            }
+        }
+    }
+
+    class NotificationSettings(val enabled: Boolean, val tracksLastActionTime: Boolean, val customTime: LocalTime = LocalTime.MIDNIGHT.plusHours(9)) {
+        object Serializer {
+            val JSON_ENABLED = "enabled"
+            val JSON_TRACKS_LAST = "tracks"
+            val JSON_CUSTOM_TIME = "time"
+
+            public fun toJson(settings: NotificationSettings): JSONObject {
+                return with(JSONObject()) {
+                    put(JSON_ENABLED, settings.enabled)
+                    put(JSON_TRACKS_LAST, settings.tracksLastActionTime)
+                    putOpt(JSON_CUSTOM_TIME, settings.customTime?.toString())
+                }
+            }
+
+            public fun fromJson(jsonObject: JSONObject?): NotificationSettings? {
+                return jsonObject?.let {
+                    var time = it.optString(JSON_CUSTOM_TIME)
+                    if (time != null) {
+                        NotificationSettings(it.optBoolean(JSON_ENABLED, true), it.optBoolean(JSON_TRACKS_LAST, true), LocalTime.parse(time))
+                    } else {
+                        NotificationSettings(it.optBoolean(JSON_ENABLED, true), it.optBoolean(JSON_TRACKS_LAST, true))
+                    }
+                }
+            }
+        }
+    }
 
 }

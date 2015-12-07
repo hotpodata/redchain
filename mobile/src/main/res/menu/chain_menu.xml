@@ -10,7 +10,7 @@
 
     <item
         android:id="@+id/edit_chain"
-        android:icon="@drawable/ic_action_edit_white"
+        android:icon="@drawable/ic_settings_24dp"
         android:title="@string/edit_chain"
         app:showAsAction="ifRoom" />
 

@@ -66,6 +66,10 @@
     <string name="daily_reminder">Daily Reminder</string>
     <string name="broken_chain">Broken Chain</string>
 
+    <string name="notif_radio_completion_time">Notify me tomorrow at the time I completed my task today.</string>
+    <string name="notif_radio_completion_time_broken">Notify me after the chain breaks at the time I completed my task today.</string>
+    <string name="notif_radio_custom_time_template">Custom time %1$s</string>
+
     <string name="notifications_heading">Notifications</string>
     <string name="notification_reminder_text">Keep your chain alive. Complete your goal everyday. No excuses.</string>
     <string name="notification_broken_title">Broken Chain!</string>

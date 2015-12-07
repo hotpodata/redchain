@@ -7,6 +7,7 @@ import android.content.Context
 import android.support.v4.app.NotificationManagerCompat
 import android.support.v7.app.NotificationCompat
 import com.hotpodata.redchain.activity.ChainActivity
+import com.hotpodata.redchain.data.Chain
 import com.hotpodata.redchain.receivers.BrokenChainNotificationReceiver
 import com.hotpodata.redchain.receivers.ReminderNotificationReceiver
 import org.joda.time.LocalDateTime
@@ -16,10 +17,6 @@ import timber.log.Timber
  * Created by jdrotos on 11/7/15.
  */
 object NotificationMaster {
-
-    val PREFS_NOTIFICATIONMANAGER = "NotificationMaster"
-    val PREF_KEY_SHOW_REMINDER = "PREF_KEY_SHOW_REMINDER"
-    val PREF_KEY_SHOW_BROKEN = "PREF_KEY_SHOW_BROKEN"
 
     val NOTIF_REMINDER = 1
     val NOTIF_BROKEN = 2
@@ -48,7 +45,8 @@ object NotificationMaster {
         return NOTIF_REMINDER + Math.abs(chainId.hashCode())
     }
 
-    public fun scheduleReminderNotification(chainId: String) {
+    public fun scheduleReminderNotification(chain: Chain) {
+        var chainId = chain.id
         var intent = ReminderNotificationReceiver.IntentGenerator.generateIntent(context!!, chainId)
         var pending = PendingIntent.getBroadcast(context, genReceiverCodeForReminder(chainId), intent, PendingIntent.FLAG_UPDATE_CURRENT)
         var alarmManager: AlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -57,8 +55,15 @@ object NotificationMaster {
         } catch(ex: Exception) {
             Timber.e(ex, "scheduleReminderNotification Exception")
         }
-        var alarmTime = LocalDateTime.now().plusDays(1).minusHours(2).toDateTime().millis
-        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pending)
+        chain.notifReminderSettings?.let {
+            var alarmTime = if (it.tracksLastActionTime || it.customTime == null) {
+                chain.newestDate?.plusDays(1)?.toDateTime()?.millis ?: LocalDateTime.now().plusDays(1).toDateTime().millis
+            } else {
+                LocalDateTime.now().withHourOfDay(it.customTime.hourOfDay).withMinuteOfHour(it.customTime.minuteOfHour).plusDays(1).toDateTime().millis
+            }
+            alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pending)
+        }
+
     }
 
     public fun dismissReminderNotification(chainId: String) {
@@ -66,7 +71,8 @@ object NotificationMaster {
         notificationManager.cancel(genNotifIdForReminder(chainId))
     }
 
-    public fun scheduleBrokenNotification(chainId: String) {
+    public fun scheduleBrokenNotification(chain: Chain) {
+        var chainId = chain.id
         var intent = BrokenChainNotificationReceiver.IntentGenerator.generateIntent(context!!, chainId)
         var pending = PendingIntent.getBroadcast(context, genReceiverCodeForBroken(chainId), intent, PendingIntent.FLAG_UPDATE_CURRENT)
         var alarmManager: AlarmManager = context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -75,8 +81,14 @@ object NotificationMaster {
         } catch(ex: Exception) {
             Timber.e(ex, "scheduleBrokenNotification Exception")
         }
-        var alarmTime = LocalDateTime.now().plusDays(2).toLocalDate().toDateTimeAtStartOfDay().millis
-        alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pending)
+        chain.notifBrokenSettings?.let {
+            var alarmTime = if (it.tracksLastActionTime || it.customTime == null) {
+                chain.newestDate?.plusDays(2)?.toDateTime()?.millis ?: LocalDateTime.now().plusDays(2).toDateTime().millis
+            } else {
+                LocalDateTime.now().withHourOfDay(it.customTime.hourOfDay).withMinuteOfHour(it.customTime.minuteOfHour).plusDays(1).toDateTime().millis
+            }
+            alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pending)
+        }
     }
 
     public fun dismissBrokenNotification(chainId: String) {
@@ -85,21 +97,21 @@ object NotificationMaster {
     }
 
     public fun showReminderNotification(chainId: String) {
-        if (showReminderEnabled()) {
-            var notif = generateReminderNotification(chainId)
-            if (notif != null) {
-                var notificationManager = NotificationManagerCompat.from(context)
-                notificationManager.notify(genNotifIdForReminder(chainId), notif)
+        ChainMaster.getChain(chainId)?.let {
+            if (it.notifReminderSettings?.enabled ?: false) {
+                generateReminderNotification(chainId)?.let {
+                    NotificationManagerCompat.from(context).notify(genNotifIdForReminder(chainId), it)
+                }
             }
         }
     }
 
     public fun showBrokenChainNotification(chainId: String) {
-        if (showBrokenEnabled()) {
-            var notif = generateBrokenChainNotification(chainId)
-            if (notif != null) {
-                var notificationManager = NotificationManagerCompat.from(context)
-                notificationManager.notify(genNotifIdForBroken(chainId), notif)
+        ChainMaster.getChain(chainId)?.let {
+            if (it.notifBrokenSettings?.enabled ?: false) {
+                generateBrokenChainNotification(chainId)?.let {
+                    NotificationManagerCompat.from(context).notify(genNotifIdForBroken(chainId), it)
+                }
             }
         }
     }
@@ -139,29 +151,5 @@ object NotificationMaster {
     fun genPendingIntent(chainId: String): PendingIntent {
         var intent = ChainActivity.IntentGenerator.generateIntent(context!!, chainId)
         return PendingIntent.getActivity(context, chainId.hashCode(), intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
-
-    fun setShowReminder(enabled: Boolean) {
-        var sharedPref = context?.getSharedPreferences(PREFS_NOTIFICATIONMANAGER, Context.MODE_PRIVATE);
-        var editor = sharedPref?.edit();
-        editor?.putBoolean(PREF_KEY_SHOW_REMINDER, enabled);
-        editor?.commit();
-    }
-
-    fun setShowBroken(enabled: Boolean) {
-        var sharedPref = context?.getSharedPreferences(PREFS_NOTIFICATIONMANAGER, Context.MODE_PRIVATE);
-        var editor = sharedPref?.edit();
-        editor?.putBoolean(PREF_KEY_SHOW_BROKEN, enabled);
-        editor?.commit();
-    }
-
-    fun showReminderEnabled(): Boolean {
-        var sharedPref = context?.getSharedPreferences(PREFS_NOTIFICATIONMANAGER, Context.MODE_PRIVATE)
-        return sharedPref!!.getBoolean(PREF_KEY_SHOW_REMINDER, true)
-    }
-
-    fun showBrokenEnabled(): Boolean {
-        var sharedPref = context?.getSharedPreferences(PREFS_NOTIFICATIONMANAGER, Context.MODE_PRIVATE)
-        return sharedPref!!.getBoolean(PREF_KEY_SHOW_BROKEN, true)
     }
 }
