@@ -1,15 +1,22 @@
 #RedChain
 
-RedChain is a simple daily goal tracker. The Pro version allows multiple chains, and chain customization.
+RedChain is a simple daily goal tracker written in Kotlin.
 
-This project is largely written in Kotlin. The few Java classes scattered about were pulled over from other projects,
-but they do conveniently serve to demonstrate Java <--> Kotlin interoperability.
+##Features
+* Unlimited chains!
+* Notifications
+*  Daily deminders & Broken chain notifications
+* Chain customization
+*  Custom Colors
+*  Custom Titles
+*  Chain by chain notification settings.
+* Stats for each chain and globally.
 
 ### Play Store
 
 Free: https://play.google.com/store/apps/details?id=com.hotpodata.redchain.free
 
-Pro: https://play.google.com/store/apps/details?id=com.hotpodata.redchain.pro
+Pro (Ad-free): https://play.google.com/store/apps/details?id=com.hotpodata.redchain.pro
 
 ### Proooomoooo
 
