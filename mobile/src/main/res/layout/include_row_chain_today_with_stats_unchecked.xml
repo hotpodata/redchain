@@ -21,7 +21,8 @@
         android:singleLine="true"
         android:text="@string/today"
         android:textColor="@color/primary_text"
-        android:textSize="64dp" />
+        android:textSize="64dp"
+        app:sizeToFit="true"/>
 
     <com.hotpodata.redchain.view.XView
         android:id="@+id/xview"

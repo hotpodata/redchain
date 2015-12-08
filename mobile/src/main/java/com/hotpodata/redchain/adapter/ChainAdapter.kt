@@ -93,6 +93,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                 holder.xview.isClickable = false
                 holder.xview.boxToXPercentage = 1f
                 holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
+                holder.todayTitleTv.invalidate()
                 holder.timeTv?.text = chain.newestDate?.toString(dtformat3)
                 holder.currentDayCountTv?.text = "" + chain.chainLength
                 holder.currentDayLabelTv?.text = ctx.resources.getQuantityString(R.plurals.days_and_counting, chain.chainLength)
@@ -103,6 +104,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                     goToScene(holder.sceneRoot, R.layout.include_row_chain_today_with_stats_unchecked)
                     holder.rebindViews()
                 }
+                holder.todayTitleTv.invalidate()
                 holder.xview.isClickable = true
                 holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
                 holder.xview.boxToXPercentage = 0f

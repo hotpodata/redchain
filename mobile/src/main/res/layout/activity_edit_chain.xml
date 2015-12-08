@@ -157,9 +157,9 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="@dimen/keyline_one"
         android:clickable="true"
-        android:src="@drawable/ic_action_checkmark"
+        android:src="@drawable/ic_save_24dp"
         android:tint="#FFFFFF"
-        app:backgroundTint="@color/primary_dark"
+        app:backgroundTint="@color/accent"
         app:layout_anchor="@id/toolbar"
         app:layout_anchorGravity="bottom|right|end" />
 

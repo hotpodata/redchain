@@ -13,7 +13,10 @@
         android:layout_height="96dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="32dp"
+        android:layout_marginBottom="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginTop="32dp"
         app:boxToXPercentage="1" />
 
     <me.grantland.widget.AutofitTextView
@@ -21,15 +24,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="@dimen/keyline_one"
         android:layout_marginTop="16dp"
         android:layout_toRightOf="@+id/xview"
-        android:gravity="center"
         android:lines="1"
+        android:paddingRight="@dimen/keyline_one"
         android:singleLine="true"
         android:text="@string/today"
         android:textColor="@color/primary_text"
-        android:textSize="56dp" />
+        android:textSize="56dp"
+        app:sizeToFit="true" />
 
     <me.grantland.widget.AutofitTextView
         android:id="@+id/time"
@@ -43,7 +46,8 @@
         android:singleLine="true"
         android:text="3:33pm"
         android:textColor="@color/primary_text"
-        android:textSize="@dimen/row_title_max" />
+        android:textSize="@dimen/row_title_max"
+        app:sizeToFit="true" />
 
     <View
         android:id="@+id/div"
