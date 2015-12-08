@@ -185,7 +185,7 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
                     if (chainId != null && chainName != null && chainColor != null && chainDates != null) {
                         var chain = Chain(chainId, chainName, chainColor, ArrayList<LocalDateTime>(chainDates))
                         chain.longestRun = chainjson.optInt(JSON_KEY_LONGESTRUN, 0)
-                        chain.longestRunLastDate = chainjson.optString(JSON_KEY_LONGESTRUNDATE)?.let {
+                        chain.longestRunLastDate = chainjson.optString(JSON_KEY_LONGESTRUNDATE,null)?.let {
                             LocalDateTime.parse(it)
                         }
                         chainjson.optJSONObject(JSON_KEY_NOTIF_REMINDER_SETTINGS)?.let {
@@ -233,7 +233,7 @@ public class Chain(chainId: String, name: String, chainColor: Int, links: List<L
 
             public fun fromJson(jsonObject: JSONObject?): NotificationSettings? {
                 return jsonObject?.let {
-                    var time = it.optString(JSON_CUSTOM_TIME)
+                    var time = it.optString(JSON_CUSTOM_TIME, null)
                     if (time != null) {
                         NotificationSettings(it.optBoolean(JSON_ENABLED, true), it.optBoolean(JSON_TRACKS_LAST, true), LocalTime.parse(time))
                     } else {
