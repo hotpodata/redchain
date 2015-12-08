@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/content_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="256dp"
+    android:paddingBottom="24dp">
+
+    <me.grantland.widget.AutofitTextView
+        android:id="@+id/today_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="@dimen/keyline_one"
+        android:layout_marginRight="@dimen/keyline_one"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:lines="1"
+        android:singleLine="true"
+        android:text="@string/today"
+        android:textColor="@color/primary_text"
+        android:textSize="64dp" />
+
+    <com.hotpodata.redchain.view.XView
+        android:id="@+id/xview"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_below="@+id/today_title_tv"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="32dp"
+        app:boxToXPercentage="0" />
+
+    <TextView
+        android:id="@+id/motivation_blurb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/xview"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="@dimen/keyline_one"
+        android:layout_marginRight="@dimen/keyline_one"
+        android:gravity="center"
+        android:text="@string/dont_break_the_chain"
+        android:textColor="@color/secondary_text"
+        android:textSize="18dp" />
+
+</RelativeLayout>

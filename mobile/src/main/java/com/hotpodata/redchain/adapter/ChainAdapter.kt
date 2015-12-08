@@ -4,9 +4,11 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.Typeface
 import android.provider.Settings
 import android.support.v7.widget.RecyclerView
+import android.transition.AutoTransition
+import android.transition.Scene
+import android.transition.TransitionManager
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +19,7 @@ import android.view.animation.Interpolator
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.hotpodata.redchain.BuildConfig
+import com.hotpodata.redchain.ChainMaster
 import com.hotpodata.redchain.R
 import com.hotpodata.redchain.adapter.viewholder.*
 import com.hotpodata.redchain.data.Chain
@@ -40,9 +43,6 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
     val CHAIN_FIRST_DAY_MESSAGE = 3;
     val CHAIN_AD = 4
 
-    val rowHeadingTypeface: Typeface
-    val rowSubHeadTypeface: Typeface
-
     var chain: Chain
     var rows = ArrayList<Row>()
 
@@ -61,8 +61,6 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
 
     init {
         chain = argChain
-        rowHeadingTypeface = Typeface.createFromAsset(context.assets, "fonts/Roboto-Thin.ttf");
-        rowSubHeadTypeface = Typeface.createFromAsset(context.assets, "fonts/Roboto-Medium.ttf");
 
         rowMaxTitleSize = context.resources.getDimensionPixelSize(R.dimen.row_title_max)
         rowMinTitleSize = context.resources.getDimensionPixelSize(R.dimen.row_title_min)
@@ -72,34 +70,39 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
         buildRows()
     }
 
+    private fun goToScene(vg: ViewGroup, layoutResId: Int) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            var scene = Scene.getSceneForLayout(vg, layoutResId, ctx)
+            TransitionManager.go(scene, AutoTransition());
+        } else {
+            vg.removeAllViews()
+            LayoutInflater.from(ctx).inflate(layoutResId, vg, true)
+        }
+    }
+
     @Suppress("DEPRECATION")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder?, position: Int) {
-        if (holder is ChainTodayVh) {
-            var headingTypeface = rowHeadingTypeface
-            if (holder.tv1.typeface != headingTypeface) {
-                holder.tv1.typeface = headingTypeface
-            }
-            if (holder.tv2.typeface != headingTypeface) {
-                holder.tv2.typeface = headingTypeface
-            }
-            if (holder.tv3.typeface != headingTypeface) {
-                holder.tv3.typeface = headingTypeface
-            }
-            if (holder.tv4.typeface != headingTypeface) {
-                holder.tv4.typeface = headingTypeface
-            }
+        if (holder is ChainTodayWithStatsVh) {
             if (chain.chainContainsToday()) {
+                if (holder.statsContainer == null) {
+                    goToScene(holder.sceneRoot, R.layout.include_row_chain_today_with_stats_checked)
+                    holder.rebindViews()
+                }
+
                 holder.xview.setOnClickListener(null)
                 holder.xview.isClickable = false
                 holder.xview.boxToXPercentage = 1f
                 holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
-                holder.tv3.text = ctx.resources.getString(R.string.day_num, chain.chainLength)
-                holder.tv4.text = chain.chainLink(0)?.toString(dtformat3)
-                holder.tv2.visibility = View.GONE
-                holder.afterChecked.visibility = View.VISIBLE
+                holder.timeTv?.text = chain.newestDate?.toString(dtformat3)
+                holder.currentDayCountTv?.text = "" + chain.chainLength
+                holder.currentDayLabelTv?.text = ctx.resources.getQuantityString(R.plurals.days_and_counting, chain.chainLength)
+                holder.bestInChainCountTv?.text = "" + chain.longestRun
+                holder.bestAllChainsCountTv?.text = "" + ChainMaster.getLongestRunOfAllChains()
             } else {
-                holder.tv2.visibility = View.VISIBLE
-                holder.afterChecked.visibility = View.GONE
+                if (holder.motivationBlurbTv == null) {
+                    goToScene(holder.sceneRoot, R.layout.include_row_chain_today_with_stats_unchecked)
+                    holder.rebindViews()
+                }
                 holder.xview.isClickable = true
                 holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
                 holder.xview.boxToXPercentage = 0f
@@ -133,20 +136,14 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             var titleHeight = Math.max(rowMinTitleSize, rowMaxTitleSize - position).toFloat()//rowMinTitleSize + (floatDepth * (rowMaxTitleSize - rowMinTitleSize))
 
             var data = rows[position] as RowChainLink
-            var headingTypeface = rowHeadingTypeface
+            //var headingTypeface = rowHeadingTypeface
 
             holder.itemView.setOnClickListener(null)
             holder.xview.setBox(false)
             holder.xview.setColors(chain.color, ctx.resources.getColor(R.color.material_grey))
 
-            if (holder.tv1.typeface != headingTypeface) {
-                holder.tv1.typeface = headingTypeface
-            }
             if (holder.tv1.textSize != titleHeight) {
                 holder.tv1.setTextSize(TypedValue.COMPLEX_UNIT_PX, titleHeight)
-            }
-            if (holder.tv2.typeface != rowSubHeadTypeface) {
-                holder.tv2.typeface = rowSubHeadTypeface
             }
 
             val dateStr = if (data.dateTime.toLocalDate().plusDays(1).isEqual(LocalDate.now())) {
@@ -160,11 +157,11 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             val timeStr = data.dateTime.toString(dtformat3)
 
             val depth = chain.chainLength - chain.chainDepth(data.dateTime)
-            holder.tv1.text = ctx.resources.getString(R.string.day_num, depth)
+            holder.tv1.text = "" + depth
             holder.tv2.text = "$dateStr\n$timeStr";
         }
         if (holder is VertLineVh) {
-            var lineHeight = Math.max(rowMinLineSize, rowMaxLineSize - position).toFloat() //rowMinLineSize + (floatDepth * (rowMaxLineSize - rowMinLineSize))
+            var lineHeight = Math.max(rowMinLineSize, rowMaxLineSize - position).toFloat()
             var data = rows.get(position) as RowChainLine
             if (holder.vertLine.layoutParams != null && holder.vertLine.layoutParams.height != lineHeight.toInt()) {
                 holder.vertLine.layoutParams.height = lineHeight.toInt()
@@ -213,8 +210,8 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             return VertLineVh(lineView);
         }
         if (viewType == CHAIN_TODAY) {
-            var chainView = inflater.inflate(R.layout.row_chain_today, parent, false);
-            var vh = ChainTodayVh(chainView);
+            var view = inflater.inflate(R.layout.row_chain_today_with_stats, parent, false)
+            var vh = ChainTodayWithStatsVh(view);
             return vh;
         }
         if (viewType == CHAIN_FIRST_DAY_MESSAGE) {
@@ -276,19 +273,9 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
             Timber.d("Skipping RowChainAd()")
         }
 
-
-        var oldRows = rows
         rows = freshRows
 
-        //        if (oldRows.size == 1 && rows.size == 2) {
-        //            notifyItemChanged(0)
-        //            notifyItemInserted(1)
-        //        } else if (oldRows.size > 1 && rows.size == oldRows.size) {
-        //            notifyItemChanged(0)
-        //        } else {
-        //            notifyDataSetChanged()
-        //        }
-        //TODO: We can do better
+        //TODO: Be smarter about this to get free animations.
         notifyDataSetChanged()
     }
 

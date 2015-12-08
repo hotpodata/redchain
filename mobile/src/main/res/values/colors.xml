@@ -3,22 +3,11 @@
     <color name="primary">#F44336</color>
     <color name="primary_dark">#D32F2F</color>
     <color name="primary_light">#FFCDD2</color>
-    <color name="accent">@color/primary_dark</color>
+    <color name="accent">@color/material_grey</color>
     <color name="primary_text">#212121</color>
     <color name="secondary_text">#727272</color>
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
-
     <color name="settings_row_title_color">#0F0F0F</color>
     <color name="settings_row_subtitle_color">#5F5F5F</color>
-
-
-    <!--<color name="primary">#FF5722</color>-->
-    <!--<color name="primary_dark">#E64A19</color>-->
-    <!--<color name="primary_light">#FFCCBC</color>-->
-    <!--<color name="accent">#795548</color>-->
-    <!--<color name="primary_text">#212121</color>-->
-    <!--<color name="secondary_text">#727272</color>-->
-    <!--<color name="icons">#FFFFFF</color>-->
-    <!--<color name="divider">#B6B6B6</color>-->
 </resources>

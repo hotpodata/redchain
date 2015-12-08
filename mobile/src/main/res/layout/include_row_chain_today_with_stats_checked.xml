@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/content_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="256dp"
+    android:paddingBottom="8dp">
+
+    <com.hotpodata.redchain.view.XView
+        android:id="@+id/xview"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="32dp"
+        app:boxToXPercentage="1" />
+
+    <me.grantland.widget.AutofitTextView
+        android:id="@+id/today_title_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="@dimen/keyline_one"
+        android:layout_marginTop="16dp"
+        android:layout_toRightOf="@+id/xview"
+        android:gravity="center"
+        android:lines="1"
+        android:singleLine="true"
+        android:text="@string/today"
+        android:textColor="@color/primary_text"
+        android:textSize="56dp" />
+
+    <me.grantland.widget.AutofitTextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/today_title_tv"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="@dimen/keyline_one"
+        android:layout_toRightOf="@+id/xview"
+        android:lines="1"
+        android:singleLine="true"
+        android:text="3:33pm"
+        android:textColor="@color/primary_text"
+        android:textSize="@dimen/row_title_max" />
+
+    <View
+        android:id="@+id/div"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/xview"
+        android:background="#DFDFDF" />
+
+    <LinearLayout
+        android:id="@+id/stats_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/div"
+        android:layout_marginLeft="@dimen/keyline_one"
+        android:layout_marginRight="@dimen/keyline_one"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/keyline_one">
+
+        <LinearLayout
+            android:layout_width="96dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/keyline_one"
+            android:layout_marginRight="@dimen/keyline_one"
+            android:layout_weight="0"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/current_day_count_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal|bottom"
+                android:text="0"
+                android:textColor="@color/primary_text"
+                android:textSize="64dp" />
+
+            <TextView
+                android:id="@+id/current_day_count_label_tv"
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/stats_current_chain"
+                android:textColor="@color/primary_text"
+                android:textSize="@dimen/row_subtitle" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/best_in_chain_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/primary_text"
+                android:textSize="36dp" />
+
+            <TextView
+                android:id="@+id/best_in_chain_label_tv"
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/stats_best_in_chain"
+                android:textColor="@color/primary_text"
+                android:textSize="@dimen/row_subtitle" />
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/all_chains_best_count_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/primary_text"
+                android:textSize="36dp" />
+
+            <TextView
+                android:id="@+id/all_chains_best_label_tv"
+                android:layout_width="72dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/stats_all_chains_best"
+                android:textColor="@color/primary_text"
+                android:textSize="@dimen/row_subtitle" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</RelativeLayout>

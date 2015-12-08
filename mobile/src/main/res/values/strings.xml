@@ -2,10 +2,13 @@
     <string name="app_name">RedChain</string>
     <string name="today">Today</string>
     <string name="yesterday">Yesterday</string>
-    <!--<string name="dont_break_the_chain">Your only job is to avoid breaking the chain. Keep going. Keep working towards your goal. Everyday.</string>-->
     <string name="dont_break_the_chain">Complete your goal today. Check this box. Complete your goal tomorrow. Check this box. Complete your goal the next day. Check this box. Don\'t break the chain.</string>
     <string name="open_drawer">Open Drawer</string>
     <string name="close_drawer">Close Drawer</string>
+    
+    <string name="stats_current_chain">Chain Length</string>
+    <string name="stats_best_in_chain">Longest this chain has ever been.</string>
+    <string name="stats_all_chains_best">Longest any chain has ever been.</string>
 
     <string name="pro_feature_title_template">%1$s is a Pro Feature!</string>
     <string name="go_pro_action">Go Pro Now!</string>
@@ -26,6 +29,10 @@
     <string name="ad_explainer">Ads are shown when you are viewing a chain that has been broken. When the current chain exceeds the maximum length of your past broken chains, this ad will disappear. If you never want see ads, please consider purchasing RedChain Pro."</string>
 
     <string name="day_num">Day %1$d</string>
+    <plurals name="days_and_counting">
+        <item quantity="one">Day and counting.</item>
+        <item quantity="other">Days and counting.</item>
+    </plurals>
 
     <string name="error_invalid_title">You must supply a valid title</string>
 

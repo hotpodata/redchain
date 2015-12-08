@@ -95,6 +95,7 @@ dependencies {
     compile 'com.android.support:multidex:1.0.0'
     compile 'com.jakewharton.timber:timber:3.1.0'
     compile 'com.google.android.gms:play-services-analytics:8.3.0'
+    compile 'me.grantland:autofittextview:0.2.+'
 }
 buildscript {
     ext.kotlin_version = '1.0.0-beta-3595'

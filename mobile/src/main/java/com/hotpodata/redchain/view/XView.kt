@@ -20,7 +20,7 @@ public class XView : View {
     var xPaint: Paint? = null
     var boxToXPercentage: Float = 0f
         get
-        set(percentage: Float){
+        set(percentage: Float) {
             field = percentage
             Timber.d("setBoxToPErcentage:" + percentage)
             postInvalidate()
@@ -45,13 +45,23 @@ public class XView : View {
 
     @Suppress("DEPRECATION")
     private fun init(context: Context, attrs: AttributeSet?) {
+        if (attrs != null) {
+            val a = context.obtainStyledAttributes(attrs, R.styleable.XView)
+            if (a != null) {
+                if (a.hasValue(R.styleable.XView_boxToXPercentage)) {
+                    boxToXPercentage = a.getFloat(R.styleable.XView_boxToXPercentage, boxToXPercentage)
+                }
+                a.recycle()
+            }
+        }
+
         xColor = context.resources.getColor(R.color.primary)
         xColorSecondary = context.resources.getColor(R.color.accent)
         xWidth = context.resources.getDimensionPixelSize(R.dimen.row_x_thickness).toFloat()
         xPaint = createFreshXPaint()
     }
 
-    fun setColors(primColor: Int, secondaryColor: Int){
+    fun setColors(primColor: Int, secondaryColor: Int) {
         xColor = primColor;
         xColorSecondary = secondaryColor;
     }
@@ -66,8 +76,8 @@ public class XView : View {
         return paint
     }
 
-    public fun setBox(boxMode: Boolean){
-        boxToXPercentage = if(boxMode) 0f else 1f
+    public fun setBox(boxMode: Boolean) {
+        boxToXPercentage = if (boxMode) 0f else 1f
         invalidate()
     }
 
@@ -77,13 +87,14 @@ public class XView : View {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        for(i in 0..1) {//This for loop is for the weird shadow effect
+        for (i in 0..1) {
+            //This for loop is for the weird shadow effect
             if (xPaint != null && width > 0 && height > 0) {
-                if(i == 0){
+                if (i == 0) {
                     xPaint?.color = xColorSecondary
                     canvas.save()
-                    canvas.translate(xWidth/2f, xWidth/2f)
-                }else{
+                    canvas.translate(xWidth / 2f, xWidth / 2f)
+                } else {
                     xPaint?.color = xColor
                     canvas.restore()
                 }
@@ -154,9 +165,6 @@ public class XView : View {
             }
         }
     }
-
-
-
 
 
 }

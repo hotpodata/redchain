@@ -85,6 +85,16 @@ object ChainMaster {
         return allChains.get(selectedChainId)!!
     }
 
+    public fun getLongestRunOfAllChains(): Int{
+        var longest = 0
+        for(chain in allChains.values){
+            if(chain.longestRun > longest){
+                longest = chain.longestRun
+            }
+        }
+        return longest
+    }
+
     public fun getChain(chainId: String): Chain? {
         return allChains.get(chainId);
     }
