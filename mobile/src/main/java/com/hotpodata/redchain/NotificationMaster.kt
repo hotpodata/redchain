@@ -85,7 +85,7 @@ object NotificationMaster {
             var alarmTime = if (it.tracksLastActionTime || it.customTime == null) {
                 chain.newestDate?.plusDays(2)?.toDateTime()?.millis ?: LocalDateTime.now().plusDays(2).toDateTime().millis
             } else {
-                LocalDateTime.now().withHourOfDay(it.customTime.hourOfDay).withMinuteOfHour(it.customTime.minuteOfHour).plusDays(1).toDateTime().millis
+                LocalDateTime.now().withHourOfDay(it.customTime.hourOfDay).withMinuteOfHour(it.customTime.minuteOfHour).plusDays(2).toDateTime().millis
             }
             alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTime, pending)
         }
