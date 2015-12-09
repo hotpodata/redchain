@@ -58,6 +58,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
     val rowMinLineSize: Int
 
     var chainUpdateListener: ChainUpdateListener? = null
+    var todayChainAnimFlag = false
 
     init {
         chain = argChain
@@ -70,8 +71,8 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
         buildRows()
     }
 
-    private fun goToScene(vg: ViewGroup, layoutResId: Int) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+    private fun goToScene(vg: ViewGroup, layoutResId: Int, animate: Boolean) {
+        if (animate && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
             var scene = Scene.getSceneForLayout(vg, layoutResId, ctx)
             TransitionManager.go(scene, AutoTransition());
         } else {
@@ -85,7 +86,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
         if (holder is ChainTodayWithStatsVh) {
             if (chain.chainContainsToday()) {
                 if (holder.statsContainer == null) {
-                    goToScene(holder.sceneRoot, R.layout.include_row_chain_today_with_stats_checked)
+                    goToScene(holder.sceneRoot, R.layout.include_row_chain_today_with_stats_checked, todayChainAnimFlag)
                     holder.rebindViews()
                 }
 
@@ -99,9 +100,10 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                 holder.currentDayLabelTv?.text = ctx.resources.getQuantityString(R.plurals.days_and_counting, chain.chainLength)
                 holder.bestInChainCountTv?.text = "" + chain.longestRun
                 holder.bestAllChainsCountTv?.text = "" + ChainMaster.getLongestRunOfAllChains()
+                todayChainAnimFlag = false
             } else {
                 if (holder.motivationBlurbTv == null) {
-                    goToScene(holder.sceneRoot, R.layout.include_row_chain_today_with_stats_unchecked)
+                    goToScene(holder.sceneRoot, R.layout.include_row_chain_today_with_stats_unchecked,todayChainAnimFlag)
                     holder.rebindViews()
                 }
                 holder.todayTitleTv.invalidate()
@@ -124,6 +126,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
                     }
                     animator.addListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator?) {
+                            todayChainAnimFlag = true
                             buildRows()
                         }
                     })
@@ -232,6 +235,7 @@ public class ChainAdapter(context: Context, argChain: Chain) : RecyclerView.Adap
 
     public fun updateChain(chn: Chain) {
         chain = chn
+        todayChainAnimFlag = false
         buildRows()
 
         //NOTE: buildRows() makes some assumptions, when we set a new chain, we should update all rows
