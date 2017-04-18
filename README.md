@@ -1,8 +1,8 @@
-#RedChain
+# RedChain
 
 RedChain is a simple daily goal tracker written in Kotlin.
 
-##Features
+## Features
 * Unlimited chains!
 * Notifications
 *  Daily deminders & Broken chain notifications
